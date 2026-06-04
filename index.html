@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Wish Willow — Make Your Wish</title>
+
+<!-- Exact font matches for onewishwillow.com:
+     Fredoka One  → the chunky serif headlines (logo / section titles)
+     Special Elite  → the typewriter body copy
+     Permanent Marker → the handwritten wish text
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Special+Elite&family=Permanent+Marker&family=Oswald:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+/* ═══ COLOUR TOKENS — sampled from onewishwillow.com ═══ */
+:root{
+  --red:    #E8190A;   /* deep maroon-red of the box background */
+  --red2:   #D41508;   /* slightly brighter red for hovers */
+  --cream:  #F2E4C4;   /* warm cream of the label band */
+  --cream2: #E8D5A8;   /* slightly darker cream for borders/shadow */
+  --cream3: #FBF5E6;   /* near-white for input backgrounds */
+  --dark:   #1A0700;   /* near-black */
+  --gold:   #C8920A;   /* star / accent gold */
+  --spark:  #E8B800;   /* bright yellow for sparks */
+  --bg:     #0D0200;   /* page background — very dark maroon */
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  background:var(--bg);
+  color:var(--dark);
+  font-family:'Special Elite',cursive;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* CRT scanlines */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0,rgba(0,0,0,.05) 1px,transparent 1px,transparent 3px);
+  pointer-events:none;z-index:9999;
+}
+/* grain */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.055;pointer-events:none;z-index:9998;
+}
+@keyframes flicker{0%,100%{opacity:1}91%{opacity:1}92%{opacity:.78}94%{opacity:1}97.5%{opacity:.86}98%{opacity:1}}
+.crt{animation:flicker 9s ease-in-out infinite;}
+
+/* ═══ PAGE WRAPPER ═══ */
+.page{
+  background:radial-gradient(ellipse at 50% 15%,#2A0A00 0%,#0D0200 55%,#060100 100%);
+  min-height:100vh;
+  padding:20px 14px 64px;
+  display:flex;flex-direction:column;align-items:center;
+}
+
+/* ═══ OUTER SHELL — cream/white card with red diagonal wave, matching real packaging ═══ */
+.oww-shell{
+  width:100%;max-width:700px;
+  border-radius:10px;
+  border:3px solid #1A0700;
+  box-shadow:0 0 0 2px var(--red),0 0 0 5px #1A0700,0 14px 60px rgba(0,0,0,.9);
+  overflow:hidden;
+  position:relative;
+  background:#F5EDE0; /* the warm off-white of the real box card */
+}
+
+/* The diagonal red wave across the whole box — matches the real packaging's swoosh */
+.oww-shell::before{
+  content:'';
+  position:absolute;inset:0;
+  /* Diagonal wave: top-left triangle + bottom-right triangle are solid red,
+     white/cream band cuts diagonally across the middle — exact match to photos */
+  background:
+    linear-gradient(
+      158deg,
+      var(--red) 0%,
+      var(--red) 30%,
+      transparent 30%,
+      transparent 62%,
+      var(--red) 62%,
+      var(--red) 100%
+    );
+  pointer-events:none;
+  z-index:0;
+}
+
+/* Subtle paper texture overlay */
+.oww-shell::after{
+  content:'';
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,
+    transparent 1px,transparent 4px
+  );
+  pointer-events:none;z-index:1;
+}
+
+/* floating star dots */
+.dot-field{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden;}
+@keyframes tw{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:1;transform:scale(1.8)}}
+@keyframes twB{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.65;transform:scale(1.3)}}
+
+/* ═══ AS SEEN IN THEATRES badge ═══ */
+.theatres-badge{
+  font-family:'Oswald',sans-serif;font-weight:700;
+  font-size:clamp(.38rem,1.3vw,.56rem);
+  color:#F5EDE0;background:#1A0700;
+  border:1.5px solid rgba(245,237,224,.5);
+  padding:2px 8px;letter-spacing:.16em;
+  display:inline-block;opacity:.9;
+  position:relative;z-index:5;
+}
+
+/* The main content area of the box — full-width SVG illustration */
+.box-content{
+  position:relative;z-index:4;
+  min-height:160px;
+  padding:0;
+  overflow:visible;
+}
+
+/* Logo area — absolutely positioned on the left red triangle */
+.box-left{
+  position:absolute;left:0;top:0;bottom:0;
+  width:clamp(110px,35%,240px);
+  display:flex;flex-direction:column;
+  align-items:flex-start;justify-content:center;
+  padding:12px 8px 12px 12px;
+  z-index:6;
+  pointer-events:none;
+}
+
+/* Badges — absolutely positioned over the red right area */
+.box-right{
+  position:absolute;right:0;top:0;bottom:0;
+  width:clamp(80px,22%,150px);
+  display:flex;flex-direction:column;
+  align-items:flex-end;justify-content:space-between;
+  padding:12px 12px 12px 6px;
+  z-index:6;
+}
+
+/* bottom strip */
+.box-strip{
+  position:relative;z-index:4;
+  background:var(--red);
+  padding:5px 16px 7px;
+  text-align:center;
+  border-top:2px solid rgba(0,0,0,.15);
+}
+
+/* ═══ INPUT PANEL (attaches under shell) ═══ */
+.ipan{
+  background:var(--cream);
+  border:4px solid var(--dark);border-top:none;
+  border-radius:0 0 14px 14px;
+  padding:1.1rem 1.4rem 1.5rem;
+  width:100%;max-width:700px;
+  box-shadow:0 0 0 2px var(--red),0 0 0 4.5px var(--dark),7px 7px 0 var(--dark);
+}
+
+/* wish input */
+.wi{
+  background:var(--cream3);
+  border:2.5px solid var(--red);border-radius:3px;
+  font-family:'Permanent Marker',cursive;
+  font-size:clamp(.95rem,3vw,1.2rem);
+  padding:.65rem .9rem;width:100%;
+  color:var(--dark);
+  box-shadow:inset 2px 2px 0 rgba(0,0,0,.1),3px 3px 0 var(--red);
+  outline:none;
+}
+.wi:focus{box-shadow:inset 2px 2px 0 rgba(0,0,0,.1),3px 3px 0 var(--dark),0 0 0 2px var(--red);}
+.wi::placeholder{color:#9B7A52;opacity:1;}
+
+/* ═══ GENDER PICKER ═══ */
+.gpick{
+  font-family:'Special Elite',cursive;
+  font-size:clamp(.68rem,2vw,.82rem);
+  background:var(--cream3);color:var(--red);
+  border:2px solid var(--red);border-radius:4px;
+  padding:.38rem .75rem;cursor:pointer;
+  transition:background .14s,color .14s,box-shadow .12s;
+  letter-spacing:.04em;flex:1 1 auto;text-align:center;
+}
+.gpick:hover{background:var(--cream2);box-shadow:2px 2px 0 var(--red);}
+.gpick.active{
+  background:var(--red);color:var(--cream);
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(.62rem,1.8vw,.76rem);
+  box-shadow:3px 3px 0 var(--dark);
+}
+
+/* ═══ CURSE SLIDER ═══ */
+.slider-wrap{
+  margin-top:.9rem;padding:.8rem 1rem;
+  background:
+    repeating-linear-gradient(0deg,rgba(139,26,16,.04) 0 1px,transparent 1px 4px),
+    var(--cream3);
+  border:2px solid var(--red);border-radius:6px;
+  box-shadow:4px 4px 0 var(--red), inset 0 0 0 1px rgba(139,26,16,.08);
+}
+.slider-title{
+  font-family:Georgia,'Times New Roman',serif;
+  font-weight:900;
+  font-size:clamp(.68rem,1.9vw,.84rem);
+  color:var(--red);letter-spacing:.045em;
+  text-transform:uppercase;
+}
+.curse-pct{
+  font-family:Georgia,'Times New Roman',serif;
+  font-weight:900;
+  font-size:clamp(1rem,3vw,1.25rem);
+  color:var(--red);text-shadow:2px 2px 0 rgba(139,26,16,.14);
+  min-width:3.5ch;text-align:right;
+}
+.curse-mood{
+  font-family:'Special Elite',cursive;
+  font-size:clamp(.58rem,1.7vw,.74rem);
+  color:#6A4027;text-align:center;
+  margin:.35rem auto .45rem;min-height:1.2em;
+  display:block;width:max-content;max-width:100%;
+  padding:2px 10px;border-radius:999px;
+  background:rgba(242,228,196,.74);
+  text-shadow:1px 1px 0 rgba(255,255,255,.45);
+}
+input[type=range].cslider{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:10px;border-radius:5px;
+  background:linear-gradient(90deg,var(--red) var(--fill,50%),rgba(139,26,16,.16) var(--fill,50%));
+  border:1.5px solid var(--red2);cursor:pointer;outline:none;
+}
+input[type=range].cslider::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--red);border:3px solid var(--dark);
+  box-shadow:0 0 8px rgba(232,24,10,.45);cursor:pointer;
+  transition:transform .1s;
+}
+input[type=range].cslider::-webkit-slider-thumb:hover{transform:scale(1.2);}
+input[type=range].cslider::-moz-range-thumb{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--red);border:3px solid var(--dark);cursor:pointer;
+}
+.slider-ends{
+  display:flex;justify-content:space-between;
+  font-family:'Special Elite',cursive;
+  font-size:.57rem;color:#6A4027;
+  margin-top:.28rem;
+}
+
+/* ═══ BUTTONS ═══ */
+.btn{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(.78rem,2.4vw,.96rem);
+  background:var(--red);color:var(--cream);
+  border:3px solid var(--dark);border-radius:6px;
+  padding:.62rem 1.6rem;cursor:pointer;
+  box-shadow:4px 4px 0 var(--dark);
+  transition:transform .12s,box-shadow .12s;
+  letter-spacing:.05em;text-transform:uppercase;
+  display:inline-block;
+}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--dark);}
+.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--dark);}
+.btn.inv{background:var(--cream);color:var(--red);border-color:var(--red);box-shadow:4px 4px 0 var(--red2);}
+.btn.inv:hover{box-shadow:6px 6px 0 var(--red);}
+@keyframes pb{0%,100%{box-shadow:4px 4px 0 var(--dark),0 0 0 0 rgba(139,26,16,.5)}50%{box-shadow:4px 4px 0 var(--dark),0 0 0 16px rgba(139,26,16,0)}}
+.pulse{animation:pb 2.4s ease-in-out infinite;}
+
+/* ═══ HOTLINE ═══ */
+.hl{
+  background:var(--dark);color:var(--cream);
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(.48rem,1.8vw,.7rem);letter-spacing:.12em;
+  text-align:center;padding:5px 10px;
+  border-top:2.5px solid var(--red);border-bottom:2.5px solid var(--red);
+  width:100%;max-width:700px;
+}
+.hl a{color:var(--spark);text-decoration:none;}
+
+/* ═══ SECTIONS ═══ */
+.sec{display:none;}
+.sec.active{display:flex;flex-direction:column;align-items:center;}
+@keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.sec.active{animation:fu .42s ease-out;}
+
+/* ═══ SNAP SCREEN ═══ */
+#ss{
+  display:none;position:fixed;inset:0;
+  background:
+    repeating-linear-gradient(0deg,rgba(139,26,16,.035) 0 1px,transparent 1px 4px),
+    #F2E4C4;
+  z-index:8000;flex-direction:column;align-items:center;justify-content:center;
+}
+#ss.on{display:flex;}
+.wlabel{
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:clamp(.78rem,2.4vw,1.05rem);
+  color:var(--red);opacity:.96;
+  text-align:center;padding:8px 16px;margin-bottom:12px;
+  max-width:min(760px,90vw);
+  border:3px solid var(--red);
+  border-radius:6px;
+  background:rgba(255,248,236,.72);
+  box-shadow:4px 4px 0 rgba(23,22,21,.18);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.snap-stage{
+  position:relative;width:min(92vw,620px);height:min(52vw,320px);
+  background:
+    radial-gradient(circle at 50% 48%,rgba(232,184,0,.14),transparent 34%),
+    var(--cream3);
+  border:4px solid var(--dark);
+  border-radius:8px;
+  box-shadow:0 0 0 3px var(--red),8px 8px 0 rgba(23,22,21,.2);
+  overflow:hidden;
+}
+.snap-stage:before{
+  content:"REMOVE FROM THE BOX AND JUST";
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  font-family:'Fredoka One',cursive;font-size:clamp(.55rem,1.6vw,.72rem);
+  color:rgba(139,26,16,.68);letter-spacing:.12em;z-index:4;white-space:nowrap;
+}
+.snap-art{
+  position:absolute;left:50%;top:53%;
+  width:min(78%,470px);height:auto;
+  transform:translate(-50%,-50%) rotate(-6deg) scale(.84);
+  filter:drop-shadow(4px 4px 0 rgba(139,26,16,.16));
+  opacity:.86;
+  z-index:3;
+  transition:transform .16s ease,opacity .16s ease,filter .16s ease;
+}
+.snap-art.spark{
+  transform:translate(-50%,-50%) rotate(-2deg) scale(1.02);
+  opacity:1;
+  filter:drop-shadow(0 0 14px rgba(232,184,0,.75)) drop-shadow(4px 4px 0 rgba(139,26,16,.16));
+}
+.snap-art.cracked{
+  transform:translate(-50%,-50%) rotate(0deg) scale(1.16);
+  opacity:1;
+  filter:drop-shadow(0 0 20px rgba(232,184,0,.95)) drop-shadow(5px 5px 0 rgba(139,26,16,.2));
+}
+@keyframes ci{
+  0%{transform:translate(-50%,-50%) scale(0) rotate(-12deg);opacity:0}
+  40%{transform:translate(-50%,-50%) scale(1.6) rotate(5deg);opacity:1}
+  65%{transform:translate(-50%,-50%) scale(.85) rotate(-2deg)}
+  100%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:1}
+}
+.cw{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(3rem,14vw,7rem);color:var(--cream3);
+  text-shadow:4px 4px 0 var(--red),8px 8px 0 var(--dark),0 0 42px rgba(232,184,0,.85);
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);white-space:nowrap;
+  animation:ci .6s cubic-bezier(.34,1.56,.64,1) forwards;
+  pointer-events:none;z-index:10;
+}
+.sstatus{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(.7rem,2vw,.9rem);
+  color:var(--red);letter-spacing:.12em;
+  margin-top:14px;text-align:center;min-height:1.4em;padding:0 16px;
+  text-transform:uppercase;
+}
+
+/* Flash / glitch */
+@keyframes sf{0%{opacity:0}12%{opacity:.97}32%{opacity:.15}52%{opacity:.72}78%{opacity:.04}100%{opacity:0}}
+.sf{position:fixed;inset:0;background:white;pointer-events:none;z-index:10000;animation:sf .55s ease-out forwards;}
+@keyframes go{
+  0%{clip-path:inset(0 0 93% 0);transform:translateX(-8px)}
+  25%{clip-path:inset(26% 0 56% 0);transform:translateX(8px)}
+  50%{clip-path:inset(50% 0 26% 0);transform:translateX(-5px)}
+  75%{clip-path:inset(74% 0 6% 0);transform:translateX(5px)}
+  100%{clip-path:inset(0 0 93% 0);transform:translateX(0)}
+}
+.go{position:fixed;inset:0;background:rgba(139,26,16,.36);pointer-events:none;z-index:9997;animation:go .38s steps(1) forwards;}
+
+/* ═══ RESULT CARD ═══ */
+.rc{
+  background:var(--cream);border:4px solid var(--dark);border-radius:7px;
+  box-shadow:0 0 0 2.5px var(--red),0 0 0 5.5px var(--dark),10px 10px 0 var(--dark);
+  position:relative;overflow:hidden;
+  width:100%;max-width:520px;
+}
+
+/* curse badge on card */
+.curse-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:'Special Elite',cursive;font-size:.52rem;
+  padding:3px 8px;border-radius:20px;border:1.5px solid currentColor;
+  margin-bottom:.55rem;letter-spacing:.06em;
+}
+
+/* twist reveal animation */
+@keyframes typeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.twist-reveal{animation:typeIn .45s ease-out forwards;}
+.twist-loading{font-family:'Special Elite',cursive;font-size:.88rem;color:var(--red);font-style:italic;}
+@keyframes ell{0%{content:'.'}33%{content:'..'}66%{content:'...'}100%{content:'.'}}
+.twist-loading::after{content:'.';animation:ell 1.2s steps(1) infinite;}
+
+/* ═══ FAQ ═══ */
+.fwrap{width:100%;max-width:700px;}
+.ftitle{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(.95rem,3.5vw,1.3rem);color:var(--spark);
+  text-align:center;letter-spacing:.12em;
+  padding:14px 0 10px;text-shadow:2px 2px 0 var(--dark);
+}
+.fi{border-top:2px solid #3A0E05;overflow:hidden;}
+.fi:last-child{border-bottom:2px solid #3A0E05;}
+.fq{
+  font-family:'Oswald',sans-serif;font-weight:700;
+  font-size:clamp(.8rem,2.4vw,.98rem);color:var(--cream);
+  letter-spacing:.06em;padding:13px 16px;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  background:transparent;transition:background .18s;user-select:none;
+}
+.fq:hover{background:rgba(139,26,16,.28);}
+.fchev{font-size:.7rem;color:var(--spark);transition:transform .28s;flex-shrink:0;}
+.fi.open .fchev{transform:rotate(180deg);}
+.fa{
+  font-family:'Special Elite',cursive;
+  font-size:clamp(.7rem,2vw,.86rem);color:var(--cream2);
+  line-height:1.62;padding:0 16px;max-height:0;overflow:hidden;
+  transition:max-height .38s ease,padding .28s;
+}
+.fi.open .fa{max-height:300px;padding:4px 16px 14px;}
+
+/* ═══ PARTICLES ═══ */
+#pcan{position:fixed;inset:0;pointer-events:none;z-index:9990;}
+
+/* misc */
+.disc{font-size:.5rem;color:#5A3018;font-family:'Special Elite',cursive;line-height:1.35;}
+.stamp{
+  font-family:'Special Elite',cursive;font-size:.5rem;color:var(--red);
+  border:2px solid var(--red);border-radius:4px;padding:2px 6px;
+  transform:rotate(-5deg);display:inline-block;opacity:.8;
+  letter-spacing:.08em;line-height:1.4;text-align:center;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .8s linear infinite;}
+.divl{width:100%;max-width:700px;height:2px;background:linear-gradient(90deg,transparent,var(--red),transparent);margin:14px 0;}
+
+/* Live one-wish-willow.com matching layer */
+:root{
+  --red:#ED1C24;
+  --red2:#D80908;
+  --cream:#F5E4CC;
+  --cream2:#E9D5B8;
+  --cream3:#FFF6E7;
+  --dark:#171615;
+  --spark:#ED1C24;
+  --bg:#F5E4CC;
+}
+body{
+  background:var(--cream);
+  color:var(--dark);
+  font-family:Roboto,Arial,sans-serif;
+}
+body::before{opacity:.45;}
+body::after{opacity:.035;mix-blend-mode:multiply;}
+.page{
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.26),rgba(255,255,255,0) 46%),
+    var(--cream);
+  padding:0 14px 64px;
+}
+.site-head{
+  width:calc(100% + 28px);
+  min-height:82px;
+  background:var(--red);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  margin:0 -14px 30px;
+  padding:14px clamp(20px,5vw,48px);
+  border-bottom:2px solid rgba(23,22,21,.15);
+}
+.site-logo-img{display:block;width:166px;max-width:43vw;height:auto;}
+.buy-btn,.sold-pill{
+  font-family:Georgia,'Times New Roman',serif;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.buy-btn{
+  color:var(--red);
+  background:var(--cream);
+  border-radius:5px;
+  padding:14px clamp(30px,7vw,72px);
+  font-size:clamp(.95rem,2.8vw,1.25rem);
+  text-decoration:none;
+  box-shadow:inset 0 0 0 2px rgba(23,22,21,.08);
+}
+.ref-hero{
+  position:relative;
+  width:100%;
+  max-width:1160px;
+  border-radius:14px;
+  overflow:hidden;
+  margin:0 auto 34px;
+  background:#2C2825;
+}
+.ref-hero>img:first-child{display:block;width:100%;height:auto;}
+.play-img{
+  position:absolute;
+  width:clamp(74px,12vw,123px);
+  height:auto;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  filter:drop-shadow(0 3px 0 rgba(23,22,21,.35));
+}
+.ref-frame,.how-img,.faq-img{
+  width:min(100%,760px);
+  height:auto;
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
+}
+.ref-frame{margin-top:6px;margin-bottom:0;}
+.sold-pill{
+  color:var(--red);
+  font-size:clamp(1.25rem,4vw,1.8rem);
+  margin:4px 0 26px;
+}
+.how-img,.faq-img{max-width:460px;margin-top:24px;margin-bottom:12px;}
+.how-steps{
+  width:100%;
+  max-width:760px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  align-items:start;
+  margin:0 auto 22px;
+}
+.how-step{
+  text-align:center;
+  font-family:Georgia,'Times New Roman',serif;
+  font-weight:900;
+  color:var(--dark);
+  font-size:clamp(1.2rem,3vw,1.95rem);
+  line-height:1.1;
+  text-transform:uppercase;
+}
+.how-step img{display:block;max-width:210px;width:70%;height:auto;margin:0 auto 8px;}
+.oww-shell{
+  border-color:var(--dark);
+  box-shadow:0 0 0 2px var(--red),0 0 0 5px var(--dark),0 9px 28px rgba(23,22,21,.22);
+}
+.box-left img.ref-box-logo{display:block;width:100%;height:auto;filter:brightness(0) invert(1);}
+.ipan{
+  box-shadow:0 0 0 2px var(--red),0 0 0 4.5px var(--dark),7px 7px 0 rgba(23,22,21,.22);
+}
+.slider-title,.curse-pct,.btn,.hl,.ftitle,.fq{
+  font-family:Georgia,'Times New Roman',serif;
+  font-weight:900;
+}
+.btn{border-radius:5px;letter-spacing:.04em;}
+.hl{
+  background:transparent;
+  color:var(--dark);
+  max-width:960px;
+}
+.hl a{color:var(--red);}
+.fwrap{max-width:960px;}
+.ftitle{font-size:0;text-shadow:none;padding:0;}
+.fq{
+  color:var(--dark);
+  font-size:clamp(.95rem,2.7vw,1.12rem);
+}
+.fq:hover{background:rgba(237,28,36,.08);}
+.fchev{color:var(--red);}
+.fa{color:#2C2825;}
+.divl{max-width:960px;background:var(--red);opacity:.85;}
+@media(max-width:640px){
+  .site-head{min-height:70px;margin-bottom:22px;}
+  .buy-btn{padding:11px 24px;}
+  .how-steps{grid-template-columns:1fr;gap:8px;}
+}
+
+/* Single interactive section only */
+.page{padding:28px 14px 28px;}
+#sl .oww-shell,#sl .ipan,#sl .hl{max-width:1120px;}
+#sl .oww-shell{border-radius:22px 22px 8px 8px;}
+#sl .ipan{
+  border-radius:0 0 22px 22px;
+  padding:2rem clamp(1.2rem,4vw,3.2rem) 2.2rem;
+}
+#sl .box-content{min-height:176px;}
+#sl .box-content::after{
+  content:'YOU ONLY GET ONE WISH';
+  position:absolute;
+  left:24px;
+  right:24px;
+  bottom:12px;
+  z-index:7;
+  background:rgba(255,246,231,.96);
+  color:var(--red);
+  border:3px solid var(--red);
+  border-radius:7px;
+  padding:5px 14px 6px;
+  text-align:center;
+  font-family:Georgia,'Times New Roman',serif;
+  font-weight:900;
+  font-size:clamp(.9rem,2.2vw,1.25rem);
+  letter-spacing:.14em;
+  box-shadow:4px 4px 0 rgba(23,22,21,.18);
+}
+#sl .box-left{
+  width:clamp(155px,18%,215px);
+  top:-42px;
+  bottom:auto;
+  justify-content:flex-start;
+  align-items:flex-start;
+  padding:8px 8px 8px 24px;
+}
+#sl .box-left img.ref-box-logo{
+  width:100%;
+  transform:rotate(-4deg);
+  transform-origin:left center;
+  opacity:1;
+}
+.box-left [style*="padding-left"]{
+  display:none;
+}
+#sl .box-left::before{display:none;}
+.official-crack-art{
+  display:block;
+  width:min(39%,430px);
+  height:auto;
+  margin:34px auto 52px;
+  filter:saturate(1.1);
+}
+.official-crack-art + svg{display:none!important;}
+#sl .box-right{
+  width:clamp(210px,24%,300px);
+  padding:24px 24px 22px 10px!important;
+  justify-content:flex-start;
+  gap:0;
+}
+#sl .box-right>div:first-child{
+  font-family:Georgia,'Times New Roman',serif!important;
+  font-weight:900;
+  font-size:clamp(.9rem,1.95vw,1.22rem)!important;
+  text-transform:uppercase;
+  color:#fff!important;
+  background:rgba(255,246,231,.94);
+  color:var(--red)!important;
+  border:3px solid var(--red);
+  border-radius:50%;
+  padding:12px 16px;
+  text-shadow:none;
+  box-shadow:5px 5px 0 rgba(237,28,36,.22);
+  max-width:178px;
+  aspect-ratio:1.75/1;
+  margin-left:auto;
+  margin-top:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transform:rotate(-8deg);
+}
+#sl .box-right>div:last-child{
+  display:none;
+}
+#sl .box-right>div:nth-child(2){display:none;}
+#sl .box-strip span{
+  font-family:Georgia,'Times New Roman',serif!important;
+  font-weight:900;
+  font-size:clamp(.86rem,2vw,1.22rem)!important;
+}
+#sl .ipan [style*="What are you wishing for"]{
+  font-size:clamp(1.5rem,3vw,2.25rem)!important;
+}
+.wi{
+  border-color:var(--red);
+  box-shadow:6px 6px 0 var(--red);
+  min-height:76px;
+}
+.gpick{
+  font-family:'Special Elite',cursive;
+  font-size:clamp(.86rem,1.9vw,1.12rem);
+}
+.gpick.active{
+  font-family:Georgia,'Times New Roman',serif;
+  font-weight:900;
+  background:linear-gradient(#fb1d28,#d80908);
+}
+.slider-wrap{
+  border-color:var(--red);
+  border-radius:9px;
+  padding:1.3rem clamp(1rem,3vw,1.8rem);
+}
+.slider-title{font-size:clamp(1rem,2vw,1.35rem);}
+.curse-pct{font-size:clamp(1.8rem,4vw,2.7rem);}
+.curse-mood{font-size:clamp(.9rem,1.8vw,1.12rem);}
+.btn{
+  font-size:clamp(1rem,2.6vw,1.7rem);
+  padding:.76rem clamp(2.4rem,8vw,5.5rem);
+  box-shadow:7px 7px 0 var(--dark);
+}
+#sl .hl{
+  margin-top:18px;
+  font-size:clamp(1rem,2vw,1.25rem);
+  padding:12px 10px;
+}
+#sl .fwrap,#sl .fwrap + div{display:none;}
+#sr .box-content{min-height:80px!important;}
+#sr .oww-shell::before{
+  background:var(--red)!important;
+}
+#sr .oww-shell::after{
+  opacity:.18;
+}
+#sr .result-logo{
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  display:flex;
+  align-items:center;
+}
+#sr .result-logo::before{display:none;}
+#sr .result-logo .ref-box-logo{
+  display:block;
+  width:104px;
+  max-width:100%;
+  height:auto;
+  transform:rotate(-4deg);
+  filter:brightness(0) invert(1);
+}
+#sr .box-centre{
+  position:absolute;
+  inset:0 12px 0 auto;
+  width:60%;
+  display:flex;
+  align-items:center!important;
+  justify-content:flex-end!important;
+}
+#sr .sealed-label{
+  background:var(--cream3);
+  border:2px solid var(--red);
+  border-radius:6px;
+  padding:6px 10px;
+  color:var(--red)!important;
+  text-shadow:none;
+  box-shadow:3px 3px 0 rgba(23,22,21,.18);
+  font-family:Georgia,'Times New Roman',serif!important;
+  font-weight:900;
+}
+@media(max-width:700px){
+  #sl .box-content{min-height:160px;}
+  .official-crack-art{width:50%;margin-top:38px;margin-bottom:48px;}
+  #sl .box-left{width:30%;padding-left:14px;top:-34px;}
+  #sl .box-left img.ref-box-logo{transform:rotate(-5deg);}
+  #sl .box-right{padding-top:24px!important;width:40%;gap:0;}
+}
+</style>
+</head>
+
+<body class="crt">
+<canvas id="pcan"></canvas>
+
+<!-- ══════════════════════════════════════════
+     SNAP OVERLAY
+══════════════════════════════════════════ -->
+<div id="ss">
+  <div class="wlabel" id="wl"></div>
+  <div class="snap-stage">
+    <canvas id="sc" style="width:100%;height:100%;display:block;background:#F2E4C4;border-radius:8px;"></canvas>
+    <img id="snapArt" class="snap-art" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/Crack2.png?v=6285022533978037491774811195" alt="">
+    <div id="co" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;"></div>
+  </div>
+  <div class="sstatus" id="sts">Remove from the box and just make a wish.</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LANDING
+══════════════════════════════════════════ -->
+<div id="sl" class="sec active page">
+
+  <!-- THE BOX — rebuilt to match real packaging photos:
+       Cream/white card body, diagonal red wave, logo white on red left,
+       CRACK + bolt left, two cartoon faces centre, badges right -->
+  <div class="oww-shell">
+
+    <div class="dot-field" id="dl1"></div>
+
+    <!-- AS SEEN IN THEATRES top -->
+    <div style="position:relative;z-index:5;text-align:center;padding:5px 0 0;">
+      <span class="theatres-badge">&#10022; AS SEEN IN THEATRES &#10022;</span>
+    </div>
+
+    <!-- MAIN THREE-COLUMN LAYOUT -->
+    <div class="box-content">
+
+      <!-- LEFT: Red triangle area — logo + CRACK -->
+      <div class="box-left">
+        <!-- ONE WISH WILLOW logo arched, white on red -->
+        <div style="position:relative;z-index:5;width:100%;">
+          <img class="ref-box-logo" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/headertext.png?v=166783226278564575191774811195" alt="One Wish Willow">
+          <svg viewBox="0 0 240 126" width="100%" style="display:none;overflow:visible;">
+            <defs>
+              <path id="bl1" d="M 8,86 Q 120,50 232,86"/>
+              <path id="bl2" d="M 18,118 Q 120,86 222,118"/>
+            </defs>
+            <text font-family="'Fredoka One',cursive" font-size="50" fill="white" letter-spacing="1">
+              <textPath href="#bl1" startOffset="50%" text-anchor="middle">ONE WISH</textPath>
+            </text>
+            <text font-family="'Fredoka One',cursive" font-size="50" fill="white" letter-spacing="1">
+              <textPath href="#bl2" startOffset="50%" text-anchor="middle">WILLOW</textPath>
+            </text>
+          </svg>
+        </div>
+        <!-- CRACK + lightning -->
+        <div style="position:relative;z-index:5;padding-left:4px;margin-top:2px;">
+          <svg viewBox="0 0 80 52" width="72" height="48">
+            <text x="2" y="13" font-family="'Fredoka One',cursive" font-size="12" fill="white" letter-spacing="1" transform="rotate(-5,2,13)">CRACK</text>
+            <path d="M34,4 L20,28 L27,28 L14,50 L40,22 L31,22 Z" fill="white"/>
+            <line x1="42" y1="8"  x2="54" y2="2"  stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <line x1="46" y1="18" x2="60" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <line x1="46" y1="28" x2="60" y2="28" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="6"  y1="10" x2="0"  y2="4"  stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+            <line x1="4"  y1="22" x2="0"  y2="18" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="14" cy="4"  r="1.8" fill="white"/>
+            <circle cx="60" cy="40" r="1.6" fill="white"/>
+            <text x="52" y="50" font-size="7" fill="white">&#9733;</text>
+          </svg>
+        </div>
+      </div><!-- /box-left -->
+
+      <!-- FULL-WIDTH S-CURVE ILLUSTRATION
+           One unified composition matching the uploaded reference:
+           CRACK + broken twig left → boy + girl faces centre → trailing stars/hearts/symbols right
+           All red on cream, wave/arc composition -->
+      <div style="position:relative;z-index:4;width:100%;padding:0 6px 4px;overflow:visible;">
+        <img class="official-crack-art" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/Crack2.png?v=6285022533978037491774811195" alt="">
+        <svg viewBox="0 0 680 160" width="100%" xmlns="http://www.w3.org/2000/svg"
+             style="display:block;overflow:visible;">
+
+          <!-- ═══ CRACK + TWIG SECTION (left) ═══ -->
+
+          <!-- Broken twig piece 1 — angled down-left, thick tapered stick -->
+          <path d="M68,108 C60,116 52,128 44,138 C48,136 54,130 62,122 C66,128 62,136 58,144"
+                fill="none" stroke="#E8190A" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- twig texture highlight -->
+          <path d="M66,110 C58,118 50,130 42,140"
+                fill="none" stroke="rgba(255,200,180,0.4)" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- Broken twig piece 2 — smaller, angled upper-right -->
+          <path d="M88,72 C96,66 108,62 118,60 C114,64 104,68 100,72"
+                fill="none" stroke="#E8190A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M90,74 C98,68 110,64 120,62"
+                fill="none" stroke="rgba(255,200,180,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- CRACK text — bold, slightly rotated -->
+          <text x="72" y="90" font-family="'Fredoka One',cursive" font-size="20"
+                fill="#E8190A" font-weight="bold" transform="rotate(-8,72,90)" letter-spacing="1.5">CRACK</text>
+
+          <!-- Radiating lines around CRACK -->
+          <line x1="72"  y1="68" x2="68"  y2="56"  stroke="#E8190A" stroke-width="2" stroke-linecap="round"/>
+          <line x1="80"  y1="65" x2="80"  y2="53"  stroke="#E8190A" stroke-width="2" stroke-linecap="round"/>
+          <line x1="90"  y1="66" x2="96"  y2="55"  stroke="#E8190A" stroke-width="2" stroke-linecap="round"/>
+          <line x1="62"  y1="74" x2="50"  y2="68"  stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="60"  y1="84" x2="48"  y2="82"  stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="98"  y1="74" x2="110" y2="70"  stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+
+          <!-- ═══ TRAILING SYMBOLS — left arc (upper, flowing left→centre) ═══ -->
+
+          <!-- snowflake/asterisk top-left -->
+          <g transform="translate(28,58)">
+            <line x1="0" y1="-7" x2="0" y2="7"  stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="-7" y1="0" x2="7" y2="0"  stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="-5" y1="-5" x2="5" y2="5" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="5" y1="-5" x2="-5" y2="5" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+          </g>
+
+          <!-- 4-point star -->
+          <path d="M46,42 L48,36 L50,42 L56,44 L50,46 L48,52 L46,46 L40,44 Z" fill="#E8190A"/>
+
+          <!-- heart -->
+          <path d="M36,78 C36,74 30,74 30,78 C30,82 36,86 36,86 C36,86 42,82 42,78 C42,74 36,74 36,78Z" fill="#E8190A"/>
+
+          <!-- small dot cluster -->
+          <circle cx="20" cy="92"  r="2.5" fill="#E8190A"/>
+          <circle cx="16" cy="100" r="1.8" fill="#E8190A"/>
+          <circle cx="24" cy="104" r="2"   fill="#E8190A"/>
+
+          <!-- hourglass -->
+          <path d="M52,118 L62,118 L57,126 L62,134 L52,134 L57,126 Z"
+                fill="none" stroke="#E8190A" stroke-width="1.8" stroke-linejoin="round"/>
+
+          <!-- spiral swirl bottom-left -->
+          <path d="M30,126 C30,118 38,114 42,120 C46,126 40,132 34,128 C30,124 34,118 38,120"
+                fill="none" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+
+          <!-- 4-point sparkle -->
+          <path d="M18,66 L20,60 L22,66 L28,68 L22,70 L20,76 L18,70 L12,68 Z" fill="#E8190A" opacity=".7"/>
+
+          <!-- small heart -->
+          <path d="M130,58 C130,55 126,55 126,58 C126,61 130,64 130,64 C130,64 134,61 134,58 C134,55 130,55 130,58Z" fill="#E8190A"/>
+
+          <!-- ═══ BOY FACE (centre-left) ═══ -->
+          <g transform="translate(260,18)">
+            <!-- Neck -->
+            <rect x="22" y="78" width="18" height="12" rx="2.5" fill="none" stroke="#E8190A" stroke-width="2.2"/>
+            <line x1="22" y1="83" x2="40" y2="83" stroke="#E8190A" stroke-width="1.3"/>
+            <!-- Ears -->
+            <circle cx="6"  cy="46" r="6.5" fill="none" stroke="#E8190A" stroke-width="2.2"/>
+            <circle cx="56" cy="46" r="6.5" fill="none" stroke="#E8190A" stroke-width="2.2"/>
+            <!-- Head -->
+            <circle cx="31" cy="43" r="29" fill="#F5EDE0" stroke="#E8190A" stroke-width="2.5"/>
+            <!-- Hair cap — filled -->
+            <path d="M4,36 Q4,14 31,14 Q58,14 58,36 Q53,20 31,20 Q9,20 4,36Z" fill="#E8190A"/>
+            <!-- Concentric eyes — left -->
+            <circle cx="19" cy="46" r="9.5" fill="#F5EDE0" stroke="#E8190A" stroke-width="2"/>
+            <circle cx="19" cy="46" r="6.5" fill="#F5EDE0" stroke="#E8190A" stroke-width="1.6"/>
+            <circle cx="19" cy="46" r="3.5" fill="#E8190A"/>
+            <circle cx="20.2" cy="44.8" r="1.2" fill="#F5EDE0"/>
+            <!-- Concentric eyes — right -->
+            <circle cx="43" cy="46" r="9.5" fill="#F5EDE0" stroke="#E8190A" stroke-width="2"/>
+            <circle cx="43" cy="46" r="6.5" fill="#F5EDE0" stroke="#E8190A" stroke-width="1.6"/>
+            <circle cx="43" cy="46" r="3.5" fill="#E8190A"/>
+            <circle cx="44.2" cy="44.8" r="1.2" fill="#F5EDE0"/>
+            <!-- Happy / smiling expression — upturned mouth -->
+            <path d="M20,60 Q31,70 42,60" fill="none" stroke="#E8190A" stroke-width="2.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- ═══ GIRL FACE (centre-right) ═══ -->
+          <g transform="translate(328,30)">
+            <!-- Neck -->
+            <rect x="22" y="74" width="18" height="12" rx="2.5" fill="none" stroke="#E8190A" stroke-width="2.2"/>
+            <line x1="22" y1="79" x2="40" y2="79" stroke="#E8190A" stroke-width="1.3"/>
+            <!-- Round ear muffs -->
+            <circle cx="5"  cy="44" r="8" fill="none" stroke="#E8190A" stroke-width="2.2"/>
+            <circle cx="5"  cy="44" r="4.5" fill="none" stroke="#E8190A" stroke-width="1.5"/>
+            <circle cx="57" cy="44" r="8" fill="none" stroke="#E8190A" stroke-width="2.2"/>
+            <circle cx="57" cy="44" r="4.5" fill="none" stroke="#E8190A" stroke-width="1.5"/>
+            <!-- Head -->
+            <circle cx="31" cy="41" r="29" fill="#F5EDE0" stroke="#E8190A" stroke-width="2.5"/>
+            <!-- Hair cap -->
+            <path d="M4,34 Q4,12 31,12 Q58,12 58,34 Q53,18 31,18 Q9,18 4,34Z" fill="#E8190A"/>
+            <!-- Heart clips -->
+            <path d="M16,17 C16,13.5 11,13.5 11,17 C11,20 16,23.5 16,23.5 C16,23.5 21,20 21,17 C21,13.5 16,13.5 16,17Z" fill="#E8190A" stroke="#F5EDE0" stroke-width=".8"/>
+            <path d="M46,17 C46,13.5 41,13.5 41,17 C41,20 46,23.5 46,23.5 C46,23.5 51,20 51,17 C51,13.5 46,13.5 46,17Z" fill="#E8190A" stroke="#F5EDE0" stroke-width=".8"/>
+            <!-- Lashes -->
+            <line x1="16" y1="29" x2="14" y2="24" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="20" y1="27" x2="20" y2="22" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="24" y1="28" x2="26" y2="23" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="38" y1="28" x2="36" y2="23" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="42" y1="27" x2="42" y2="22" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="46" y1="29" x2="48" y2="24" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <!-- Concentric eyes -->
+            <circle cx="19" cy="44" r="9.5" fill="#F5EDE0" stroke="#E8190A" stroke-width="2"/>
+            <circle cx="19" cy="44" r="6.5" fill="#F5EDE0" stroke="#E8190A" stroke-width="1.6"/>
+            <circle cx="19" cy="44" r="3.5" fill="#E8190A"/>
+            <circle cx="20.2" cy="42.8" r="1.2" fill="#F5EDE0"/>
+            <circle cx="43" cy="44" r="9.5" fill="#F5EDE0" stroke="#E8190A" stroke-width="2"/>
+            <circle cx="43" cy="44" r="6.5" fill="#F5EDE0" stroke="#E8190A" stroke-width="1.6"/>
+            <circle cx="43" cy="44" r="3.5" fill="#E8190A"/>
+            <circle cx="44.2" cy="42.8" r="1.2" fill="#F5EDE0"/>
+            <!-- Wide teeth smile -->
+            <rect x="18" y="58" width="26" height="10" rx="5" fill="#F5EDE0" stroke="#E8190A" stroke-width="2"/>
+            <line x1="26" y1="58" x2="26" y2="68" stroke="#E8190A" stroke-width="1.3"/>
+            <line x1="31" y1="58" x2="31" y2="68" stroke="#E8190A" stroke-width="1.3"/>
+            <line x1="36" y1="58" x2="36" y2="68" stroke="#E8190A" stroke-width="1.3"/>
+          </g>
+
+          <!-- ═══ TRAILING SYMBOLS — right arc (flowing right) ═══ -->
+
+          <!-- 4-point star large -->
+          <path d="M440,48 L443,38 L446,48 L456,51 L446,54 L443,64 L440,54 L430,51 Z" fill="#E8190A"/>
+
+          <!-- heart -->
+          <path d="M472,62 C472,58 466,58 466,62 C466,66 472,70 472,70 C472,70 478,66 478,62 C478,58 472,58 472,62Z" fill="#E8190A"/>
+
+          <!-- snowflake -->
+          <g transform="translate(500,52)">
+            <line x1="0" y1="-7" x2="0" y2="7"  stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="-7" y1="0" x2="7" y2="0"  stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="-5" y1="-5" x2="5" y2="5" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="5" y1="-5" x2="-5" y2="5" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+          </g>
+
+          <!-- sparkle 4pt -->
+          <path d="M528,70 L530,62 L532,70 L540,72 L532,74 L530,82 L528,74 L520,72 Z" fill="#E8190A" opacity=".85"/>
+
+          <!-- spiral swirl -->
+          <path d="M556,62 C556,54 564,50 568,56 C572,62 566,68 560,64 C556,60 560,54 564,56"
+                fill="none" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+
+          <!-- hourglass -->
+          <path d="M586,72 L596,72 L591,80 L596,88 L586,88 L591,80 Z"
+                fill="none" stroke="#E8190A" stroke-width="1.8" stroke-linejoin="round"/>
+
+          <!-- small hearts trailing -->
+          <path d="M456,80 C456,77 452,77 452,80 C452,83 456,86 456,86 C456,86 460,83 460,80 C460,77 456,77 456,80Z" fill="#E8190A" opacity=".8"/>
+          <path d="M614,80 C614,77 610,77 610,80 C610,83 614,86 614,86 C614,86 618,83 618,80 C618,77 614,77 614,80Z" fill="#E8190A" opacity=".8"/>
+
+          <!-- dot clusters right -->
+          <circle cx="484" cy="88"  r="2.5" fill="#E8190A"/>
+          <circle cx="492" cy="94"  r="1.8" fill="#E8190A"/>
+          <circle cx="480" cy="96"  r="2"   fill="#E8190A"/>
+
+          <!-- second spiral far right -->
+          <path d="M634,58 C634,50 642,46 646,52 C650,58 644,64 638,60 C634,56 638,50 642,52"
+                fill="none" stroke="#E8190A" stroke-width="1.8" stroke-linecap="round"/>
+
+          <!-- 4-pt star far right -->
+          <path d="M660,72 L662,65 L664,72 L671,74 L664,76 L662,83 L660,76 L653,74 Z" fill="#E8190A" opacity=".75"/>
+
+          <!-- small dot trail far right -->
+          <circle cx="620" cy="95"  r="2.2" fill="#E8190A"/>
+          <circle cx="630" cy="102" r="1.6" fill="#E8190A"/>
+          <circle cx="648" cy="98"  r="2"   fill="#E8190A"/>
+
+        </svg>
+      </div>
+
+      <!-- RIGHT: Badges — positioned over the red diagonal area -->
+      <div class="box-right" style="position:absolute;right:0;top:0;bottom:0;z-index:6;">
+        <div style="font-family:'Fredoka One',cursive;font-size:clamp(.5rem,1.6vw,.72rem);color:white;text-align:right;line-height:1.2;">
+          &#9733; AMAZE YOUR<br>FRIENDS!
+        </div>
+        <div style="color:white;font-size:.32rem;text-align:right;opacity:.7;">&#10022; &#9733; &#10022;</div>
+        <div style="background:white;color:#E8190A;font-family:'Fredoka One',cursive;font-size:clamp(.36rem,1.2vw,.52rem);border-radius:6px;padding:5px 8px;line-height:1.3;text-align:center;border:2px solid #E8190A;white-space:nowrap;">
+          You only get<br><span style="font-size:1.3em;letter-spacing:.02em;">ONE WISH</span>
+        </div>
+      </div>
+
+    </div><!-- /box-content -->
+
+    <!-- BOTTOM STRIP -->
+    <div class="box-strip">
+      <span style="font-family:'Fredoka One',cursive;font-size:clamp(.42rem,1.7vw,.66rem);color:white;letter-spacing:.12em;">
+        &#10022; BREAK THE WILLOW &#10022; MAKE YOUR WISH &#10022;
+      </span>
+    </div>
+
+  </div><!-- /oww-shell -->
+
+  <!-- INPUT PANEL -->
+  <div class="ipan">
+
+    <!-- Section header -->
+    <div style="text-align:center;margin-bottom:.6rem;">
+      <div style="font-family:Georgia,'Times New Roman',serif;font-weight:900;font-size:1.1rem;color:var(--dark);letter-spacing:.02em;text-transform:uppercase;">What are you wishing for?</div>
+    </div>
+
+    <input id="wi" type="text" class="wi" placeholder="I wish for&hellip;" maxlength="120" autocomplete="off"/>
+    <div style="font-size:.55rem;color:#8B6840;text-align:right;margin-top:.22rem;font-family:'Special Elite',cursive;" id="cc">0 / 120</div>
+
+    <!-- GENDER PICKER -->
+    <div style="margin-top:.85rem;">
+      <div style="font-family:Georgia,'Times New Roman',serif;font-weight:900;font-size:.82rem;color:var(--red);margin-bottom:.42rem;letter-spacing:.04em;text-transform:uppercase;">Who is making this wish?</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="gpick active" data-g="male"      onclick="pickGender(this)">Male</button>
+        <button class="gpick"        data-g="female"    onclick="pickGender(this)">Female</button>
+        <button class="gpick"        data-g="nonbinary" onclick="pickGender(this)">Non-binary</button>
+        <button class="gpick"        data-g="spirit"    onclick="pickGender(this)">Rather not say</button>
+      </div>
+    </div>
+
+    <!-- CURSE SLIDER -->
+    <div class="slider-wrap">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
+        <div class="slider-title">How badly should it go?</div>
+        <div class="curse-pct" id="cpct">50%</div>
+      </div>
+      <div class="curse-mood" id="cmood">Minor Misinterpretation</div>
+      <input type="range" class="cslider" id="cslider" min="0" max="100" value="50"
+             style="--fill:50%;" oninput="updateSlider(this)"/>
+      <div class="slider-ends">
+        <span>Barely wrong</span>
+        <span>No refunds</span>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:.9rem;">
+      <button id="bspark" class="btn pulse" onclick="go()">Break the Willow</button>
+    </div>
+  </div>
+
+  <div style="height:12px;"></div>
+  <div class="hl">NEED HELP? CALL TODAY! &nbsp; <a href="tel:13237477118">1-323-747-7118</a></div>
+
+  <!-- FAQ -->
+  <div class="fwrap">
+    <div class="divl"></div>
+    <div class="ftitle"><img class="faq-img" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/FAQ.png?v=78192355552971861771774811195" alt="FAQ"></div>
+    <div class="fi" onclick="tfaq(this)">
+      <div class="fq">How many wishes do I get?<span class="fchev">&#9660;</span></div>
+      <div class="fa">Single Use Only. Grants one wish. No multiple attempts. Using additional One Wish Willows&trade; will not change or affect your other wishes. Only one wish per life per person.</div>
+    </div>
+    <div class="fi" onclick="tfaq(this)">
+      <div class="fq">Can I change my wish after it&rsquo;s made?<span class="fchev">&#9660;</span></div>
+      <div class="fa">Once made, a wish cannot be reversed or repeated. Consider long-term effects. Wishes are irreversible. Think carefully before wishing.</div>
+    </div>
+    <div class="fi" onclick="tfaq(this)">
+      <div class="fq">Are there wishes the Willow cannot grant?<span class="fchev">&#9660;</span></div>
+      <div class="fa">Cannot grant wishes involving time manipulation, resurrection, immortality, or creating more One Wish Willows&trade;. TABI Cat Curiosities is not responsible for wish misinterpretations. Use at your own risk.</div>
+    </div>
+    <div class="divl"></div>
+  </div>
+  <div style="color:#4A2810;font-family:'Special Elite',cursive;font-size:.5rem;text-align:center;max-width:480px;margin-top:4px;line-height:1.5;padding:0 12px;margin-bottom:8px;">
+    For entertainment purposes only. Produced by TABI Cat Curiosities. &#9733; onewishwillow.com
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RESULT
+══════════════════════════════════════════ -->
+<div id="sr" class="sec page">
+
+  <!-- Mini header box with actual logo -->
+  <div class="oww-shell" style="max-width:520px;margin-bottom:0;">
+    <div class="dot-field" id="dl2"></div>
+    <!-- Compact result header: logo white on red left, fate text on cream right -->
+    <div class="box-content" style="min-height:80px;">
+      <div class="box-left result-logo" style="width:38%;padding:10px 8px 10px 14px;">
+        <img class="ref-box-logo" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/headertext.png?v=166783226278564575191774811195" alt="One Wish Willow">
+      </div>
+      <div class="box-centre" style="justify-content:flex-end;padding-right:12px;">
+        <div style="text-align:right;position:relative;z-index:5;">
+          <div class="sealed-label" style="font-family:'Fredoka One',cursive;font-size:clamp(.5rem,2vw,.7rem);color:#E8190A;letter-spacing:.08em;line-height:1.3;">
+            &#10022; YOUR FATE<br>HAS BEEN SEALED &#10022;
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="box-strip" style="padding:4px 12px 5px;">
+      <span style="font-family:'Fredoka One',cursive;font-size:clamp(.38rem,1.5vw,.56rem);color:white;letter-spacing:.1em;">&#10022; ONE WISH &#10022; NO REFUNDS &#10022;</span>
+    </div>
+  </div>
+
+  <div style="height:14px;"></div>
+
+  <!-- RESULT CARD -->
+  <div id="rc" class="rc">
+    <div style="display:none;background:var(--red);padding:.68rem 1.1rem;align-items:center;justify-content:space-between;border-bottom:3px solid var(--dark);">
+      <div style="font-family:'Fredoka One',cursive;color:var(--cream);font-size:.88rem;letter-spacing:.04em;">&#9733; ONE WISH WILLOW &#9733;</div>
+      <div style="font-family:'Special Elite',cursive;color:var(--spark);font-size:.48rem;letter-spacing:.12em;">SINCE 1974</div>
+    </div>
+    <div style="padding:1.1rem 1.1rem .9rem;">
+      <span class="curse-badge" id="rcbadge" style="display:none;"></span>
+
+      <div style="background:var(--cream3);border:2px solid var(--dark);border-radius:2px;padding:.5rem .8rem;margin-bottom:.45rem;box-shadow:2px 2px 0 var(--dark);">
+        <div style="font-family:'Fredoka One',cursive;font-size:.54rem;color:var(--red);margin-bottom:.24rem;letter-spacing:.1em;">YOUR WISH:</div>
+        <div id="rw" style="font-family:'Permanent Marker',cursive;font-size:clamp(.9rem,3.5vw,1.12rem);color:var(--dark);word-break:break-word;"></div>
+      </div>
+
+      <div style="text-align:center;color:var(--red);font-size:.58rem;margin:.32rem 0;letter-spacing:.12em;font-family:'Fredoka One',cursive;">
+        &#9733; BUT THE WILLOW DECIDED &#9733;
+      </div>
+
+      <div style="background:#FFF6D3;border:3px solid var(--red);border-radius:2px;padding:.85rem 1rem;margin-bottom:.6rem;box-shadow:4px 4px 0 var(--red);min-height:3.5rem;">
+        <div style="font-family:'Fredoka One',cursive;font-size:.54rem;color:var(--red);margin-bottom:.24rem;letter-spacing:.07em;">&#9888; WHAT ACTUALLY HAPPENED:</div>
+        <div id="rt" style="font-family:'Special Elite',cursive;font-size:clamp(.95rem,2.8vw,1.12rem);color:var(--dark);line-height:1.55;font-style:italic;word-break:break-word;white-space:pre-line;"></div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-start;align-items:flex-end;">
+        <div class="stamp">FOR ENTERTAINMENT<br>ONLY</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:14px;width:100%;max-width:360px;">
+    <button class="btn inv" style="width:100%;text-align:center;" onclick="backToWish()">Back</button>
+    <button class="btn pulse" style="width:100%;text-align:center;" onclick="shareOnTwitter()">Get Another Wish By Sharing On Twitter</button>
+  </div>
+  <div style="height:14px;"></div>
+  <div class="hl">1-323-747-7118 &nbsp; FOR ENTERTAINMENT ONLY</div>
+  <div class="disc" style="text-align:center;max-width:480px;margin-top:10px;padding:0 12px;">
+    &#9733; This site is not responsible for wish misinterpretations. Use at your own risk. &#9733;
+  </div>
+  <div style="height:32px;"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════ -->
+<script>
+let wish = '';
+let curseLevel = 50;
+let gender = 'male';
+
+function pickGender(btn) {
+  document.querySelectorAll('.gpick').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  gender = btn.dataset.g;
+}
+
+function getPronouns(g) {
+  const m = {
+    male:      {they:'he',  them:'him', their:'his',  theyre:'he is', cap:'He'},
+    female:    {they:'she', them:'her', their:'her',  theyre:'she is',cap:'She'},
+    nonbinary: {they:'they',them:'them',their:'their',theyre:'they are',cap:'They'},
+    spirit:    {they:'they',them:'them',their:'their',theyre:'they are',cap:'They'},
+  };
+  return m[g] || m.spirit;
+}
+
+/* ── CHAR COUNT ── */
+const wi = document.getElementById('wi');
+wi.addEventListener('input', () => { document.getElementById('cc').textContent = wi.value.length + ' / 120'; });
+
+function trackVisit() {
+  if (location.protocol === 'file:') return;
+  fetch('/api/visit', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ path: location.pathname || '/', referrer: document.referrer || '' })
+  }).catch(() => {});
+}
+trackVisit();
+wi.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+
+/* ── SECTIONS ── */
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+/* ── DOT STARS ── */
+function dots(id) {
+  const el = document.getElementById(id);
+  if (!el) return; el.innerHTML = '';
+  const sym = ['&#9733;','&#10022;','&#10038;','&#183;'];
+  for (let i = 0; i < 28; i++) {
+    const s = document.createElement('span');
+    s.innerHTML = sym[i % sym.length];
+    const sz = 0.3 + Math.random() * .9, dl = Math.random() * 3.8, dr = 1.4 + Math.random() * 2.8, op = 0.08 + Math.random() * .38;
+    s.style.cssText = `position:absolute;left:${Math.random()*95}%;top:${Math.random()*92}%;font-size:${sz}rem;color:rgba(242,228,196,${op});pointer-events:none;animation:${Math.random()>.5?'tw':'twB'} ${dr}s ease-in-out ${dl}s infinite;`;
+    el.appendChild(s);
+  }
+}
+dots('dl1');
+
+/* ── FAQ ── */
+function tfaq(item) {
+  const was = item.classList.contains('open');
+  document.querySelectorAll('.fi').forEach(i => i.classList.remove('open'));
+  if (!was) item.classList.add('open');
+}
+
+/* ── CURSE SLIDER ── */
+const MOODS = [
+  [0,  15,  'Barely Misread',           '#6A4027'],
+  [15, 30,  'Minor Misinterpretation',  '#F2C46D'],
+  [30, 45,  'Warranty Void',            '#D28B39'],
+  [45, 58,  'Non-Refundable',           '#B85B24'],
+  [58, 72,  'Customer Support Is Busy', '#E8190A'],
+  [72, 85,  'No Reverse Wishes',        '#E8190A'],
+  [85, 95,  'Single Use Only',          '#B11208'],
+  [95, 101, 'No Refunds. No Exceptions.','#8B1A10'],
+];
+function getMood(v) {
+  for (const [lo,hi,label,col] of MOODS) if (v >= lo && v < hi) return {label, col};
+  return {label: MOODS[MOODS.length-1][2], col: MOODS[MOODS.length-1][3]};
+}
+function updateSlider(el) {
+  curseLevel = parseInt(el.value);
+  el.style.setProperty('--fill', curseLevel + '%');
+  document.getElementById('cpct').textContent = curseLevel + '%';
+  const mood = getMood(curseLevel);
+  const mEl = document.getElementById('cmood');
+  mEl.innerHTML = mood.label; mEl.style.color = mood.col;
+  document.getElementById('cpct').style.color = 'var(--red)';
+}
+
+/* ── PARTICLES ── */
+const pc = document.getElementById('pcan'), px = pc.getContext('2d');
+let parts = [];
+function rzP() { pc.width = innerWidth; pc.height = innerHeight; }
+rzP(); addEventListener('resize', rzP);
+class Sp {
+  constructor(x, y) {
+    const a = Math.random()*Math.PI*2, s = 2.5+Math.random()*10;
+    this.x=x;this.y=y;this.vx=Math.cos(a)*s;this.vy=Math.sin(a)*s-2;
+    this.life=40+Math.random()*50;this.ml=this.life;
+    this.sz=1.5+Math.random()*4.5;this.g=0.2;
+    this.c=['#E8B800','#FF7700','#FF3C00','#FFED8B','#FFA040','#FFF8CD','#FF5500'][Math.floor(Math.random()*7)];
+  }
+  step(){this.x+=this.vx;this.y+=this.vy;this.vy+=this.g;this.vx*=.97;this.life--;}
+  draw(){
+    const a=this.life/this.ml;
+    px.save();px.globalAlpha=a;px.fillStyle=this.c;px.shadowBlur=10;px.shadowColor=this.c;
+    px.beginPath();px.arc(this.x,this.y,this.sz*a,0,Math.PI*2);px.fill();px.restore();
+  }
+}
+function boom(x,y,n=140){for(let i=0;i<n;i++)parts.push(new Sp(x,y));}
+(function pl(){px.clearRect(0,0,pc.width,pc.height);parts=parts.filter(p=>p.life>0);parts.forEach(p=>{p.step();p.draw();});requestAnimationFrame(pl);})();
+
+/* ── CRACK SOUND ── */
+function playCrack() {
+  try {
+    const ac=new(AudioContext||webkitAudioContext)();
+    const now=ac.currentTime;
+    const len=Math.floor(ac.sampleRate*.32),buf=ac.createBuffer(1,len,ac.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.7);
+    const src=ac.createBufferSource();src.buffer=buf;
+    const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=900;bp.Q.value=0.42;
+    const gn=ac.createGain();gn.gain.setValueAtTime(2,ac.currentTime);gn.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.32);
+    src.connect(bp);bp.connect(gn);gn.connect(ac.destination);src.start(now);
+
+    const screamStart=now+.18;
+    const screamEnd=screamStart+1.18;
+    const screamBus=ac.createGain();
+    screamBus.gain.setValueAtTime(.0001,screamStart);
+    screamBus.gain.linearRampToValueAtTime(.13,screamStart+.12);
+    screamBus.gain.exponentialRampToValueAtTime(.02,screamStart+.72);
+    screamBus.gain.exponentialRampToValueAtTime(.0001,screamEnd);
+
+    const distortion=ac.createWaveShaper();
+    const curve=new Float32Array(2048);
+    for(let i=0;i<curve.length;i++){
+      const x=i*2/curve.length-1;
+      curve[i]=(1+24)*x/(1+24*Math.abs(x));
+    }
+    distortion.curve=curve;
+    distortion.oversample='2x';
+
+    const screamFilter=ac.createBiquadFilter();
+    screamFilter.type='bandpass';
+    screamFilter.frequency.setValueAtTime(1250,screamStart);
+    screamFilter.frequency.exponentialRampToValueAtTime(420,screamEnd);
+    screamFilter.Q.value=8.5;
+
+    const delay=ac.createDelay(.5);
+    delay.delayTime.value=.115;
+    const feedback=ac.createGain();
+    feedback.gain.value=.18;
+    delay.connect(feedback);feedback.connect(delay);
+
+    const osc1=ac.createOscillator();
+    osc1.type='sawtooth';
+    osc1.frequency.setValueAtTime(940,screamStart);
+    osc1.frequency.exponentialRampToValueAtTime(310,screamEnd);
+    const osc2=ac.createOscillator();
+    osc2.type='triangle';
+    osc2.frequency.setValueAtTime(1220,screamStart);
+    osc2.frequency.exponentialRampToValueAtTime(390,screamEnd);
+    osc2.detune.value=-18;
+
+    const noiseLen=Math.floor(ac.sampleRate*1.18);
+    const noiseBuf=ac.createBuffer(1,noiseLen,ac.sampleRate);
+    const nd=noiseBuf.getChannelData(0);
+    for(let i=0;i<noiseLen;i++){
+      const fade=1-i/noiseLen;
+      nd[i]=(Math.random()*2-1)*Math.pow(fade,1.15);
+    }
+    const noise=ac.createBufferSource();
+    noise.buffer=noiseBuf;
+
+    osc1.connect(distortion);
+    osc2.connect(distortion);
+    noise.connect(screamFilter);
+    distortion.connect(screamFilter);
+    screamFilter.connect(screamBus);
+    screamBus.connect(ac.destination);
+    screamBus.connect(delay);
+    delay.connect(ac.destination);
+
+    osc1.start(screamStart);osc2.start(screamStart);noise.start(screamStart);
+    osc1.stop(screamEnd);osc2.stop(screamEnd);noise.stop(screamEnd);
+  } catch(e){}
+}
+
+/* ── MAIN GO ── */
+function go() {
+  const v = wi.value.trim();
+  if (!v) {
+    wi.style.outline = '3px solid var(--red)';
+    wi.focus();
+    setTimeout(() => { wi.style.outline = ''; }, 1800);
+    return;
+  }
+  wish = v;
+  runSnap();
+}
+
+/* ── SNAP ANIMATION ── */
+function runSnap() {
+  const ss = document.getElementById('ss');
+  ss.classList.add('on');
+  document.getElementById('wl').textContent = 'Your wish: "' + wish + '"';
+  document.getElementById('sts').textContent = 'Remove from the box and just make a wish.';
+
+  const canvas = document.getElementById('sc');
+  const stage  = canvas.parentElement;
+  const W = stage.clientWidth, H = stage.clientHeight;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const co  = document.getElementById('co');
+  const art = document.getElementById('snapArt');
+  co.style.display = 'none'; co.innerHTML = '';
+  art.className = 'snap-art';
+
+  const twistPromise = fetchTwist(wish, curseLevel);
+  let phase=0, start=null, fid;
+  const RITUAL=2600, POST=1250;
+  const smsg=[
+    'Remove from the box and just make a wish.',
+    'Spark the middle.',
+    'Break it in half.',
+    'Single use only.'
+  ];
+
+  function drawRitual(t) {
+    ctx.clearRect(0,0,W,H);
+    const glow = Math.max(0, Math.sin(t * Math.PI));
+    const gr = ctx.createRadialGradient(W/2, H*.5, 0, W/2, H*.5, W*.42);
+    gr.addColorStop(0, `rgba(232,184,0,${0.06 + glow*.22})`);
+    gr.addColorStop(.32, `rgba(232,24,10,${glow*.07})`);
+    gr.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gr;
+    ctx.fillRect(0,0,W,H);
+
+    const cx = W/2, cy = H*.5;
+    const n = 10 + Math.floor(t * 22);
+    for(let i=0;i<n;i++){
+      const a = (i/n)*Math.PI*2 + t*1.8;
+      const r = 45 + Math.sin(i*1.7 + t*5)*18 + t*70;
+      const x = cx + Math.cos(a)*r;
+      const y = cy + Math.sin(a)*r*.58;
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.rotate(a);
+      ctx.strokeStyle = i%3===0 ? '#E8190A' : '#C8920A';
+      ctx.globalAlpha = .22 + glow*.48;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(-6,0);
+      ctx.lineTo(6,0);
+      ctx.moveTo(0,-6);
+      ctx.lineTo(0,6);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if(t > .34){
+      ctx.save();
+      ctx.font = `bold ${Math.round(W*.075)}px Georgia,serif`;
+      ctx.fillStyle = `rgba(232,24,10,${Math.min((t-.34)*2.2,1)})`;
+      ctx.textAlign = 'center';
+      ctx.letterSpacing = '0';
+      ctx.fillText('SPARK THE MIDDLE', cx, H*.82);
+      ctx.restore();
+    }
+  }
+
+  function drawCrackStamp() {
+    drawRitual(1);
+    const cx = W/2, cy = H*.48;
+    ctx.save();
+    ctx.strokeStyle = '#E8190A';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    const rays = [-72,-48,-24,0,24,48,72,120,150,180,210,240];
+    rays.forEach((deg, i) => {
+      const a = deg * Math.PI/180;
+      const r1 = 44 + (i%2)*8;
+      const r2 = 86 + (i%3)*10;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a)*r1, cy + Math.sin(a)*r1);
+      ctx.lineTo(cx + Math.cos(a)*r2, cy + Math.sin(a)*r2);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function animate(ts){
+    if(!start)start=ts;
+    const el=ts-start;
+    if(phase===0)phase=1;
+    if(phase===1){
+      const t=Math.min(el/RITUAL,1);
+      drawRitual(t);
+      const si=Math.min(Math.floor(t*smsg.length),smsg.length-1);
+      document.getElementById('sts').textContent=smsg[si];
+      if(t>.36 && t<.82) art.className='snap-art spark';
+      if(t>=1){
+        phase=2;start=ts;playCrack();
+        const fl=document.createElement('div');fl.className='sf';document.body.appendChild(fl);setTimeout(()=>fl.remove(),650);
+        const gl=document.createElement('div');gl.className='go';document.body.appendChild(gl);setTimeout(()=>gl.remove(),450);
+        const r=stage.getBoundingClientRect();boom(r.left+W/2,r.top+H*.48,150);
+        drawCrackStamp();
+        art.className='snap-art cracked';
+        co.style.display='flex';co.innerHTML='<div class="cw">CRACK!</div>';
+        document.getElementById('sts').textContent='The wish has been made.';
+      }
+    }
+    if(phase===2){
+      if(ts-start>=POST){
+        phase=3;cancelAnimationFrame(fid);
+        ss.classList.remove('on');
+        co.style.display='none';
+        art.className='snap-art';
+        showResult(twistPromise);
+        return;
+      }
+    }
+    if(phase<3)fid=requestAnimationFrame(animate);
+  }
+  drawRitual(0);fid=requestAnimationFrame(animate);
+}
+
+/* ── AI TWIST ── */
+async function fetchTwist(wish, curse) {
+  const p = getPronouns(gender);
+  const curseTone = getCurseTone(curse);
+  const category = detectWishCategory(wish);
+  const archetype = getArchetype(category, gender);
+
+  const prompt = `
+You are writing the result for an interactive horror site.
+
+Do not mention the film title in the output.
+Do not mention the Willow unless absolutely necessary.
+Do not use customer support unless it makes the ending sharper.
+Do not write generic cursed-wish copy.
+
+The story logic is inspired by a horror plot where a wish for love makes a real person obsessively attached, possessive, jealous, and dangerous.
+
+Adapt that same engine for every wish:
+The wish comes true.
+A human being becomes obsessed, jealous, desperate, possessive, protective, or dangerous because the wish came true.
+Anyone who threatens the wish becomes a problem.
+Someone close tries to intervene.
+The obsessed person visibly removes, silences, traps, isolates, threatens, or turns against that person.
+The wish is technically fulfilled, but now the wisher is trapped by the consequences.
+
+For love wishes, the obsessed person loves the wisher.
+For non-love wishes, do NOT make the object/concept obsessed with the wisher.
+Make a human being obsessed because of the object/concept.
+
+USER WISH: "${wish}"
+CURSE LEVEL: ${curse}% — ${curseTone}
+WISHER PRONOUNS: ${p.they}/${p.them}/${p.their}
+WISH CATEGORY: ${category}
+HUMAN ARCHETYPE TO USE: ${archetype}
+
+Write ONLY the result.
+
+Output rules:
+* 4 to 6 short lines.
+* Each line must be separated by a newline.
+* No emojis.
+* No title.
+* No preamble.
+* No markdown.
+* No “Granted.”
+* No “Your wish.”
+* Do not mention the film title.
+* Do not say “at this tier.”
+* Do not say “category.”
+* Do not say “removal process.”
+* Do not say “the Willow notes.”
+* Do not say “configuration.”
+* Do not say “performing a protective function.”
+* Avoid abstract explanation.
+* Avoid poetic fog.
+* Show one clear scary action.
+
+Pronoun clarity:
+Use the archetype noun often.
+Avoid confusing sentences like “he stands between him.”
+Use names or relationship labels if needed.
+
+Structure:
+Line 1: Confirm the wish happened and cast the human archetype.
+Line 2: Show the obsession/possession/desperation becoming too much.
+Line 3: Someone close intervenes.
+Line 4: The obsessed person does one visible scary action.
+Line 5 or 6: End with a sharp horror-comedy line showing the wish worked too well.
+
+Curse scale:
+0–25%: Eerie but mild. Nobody harmed. One uncomfortable social consequence.
+26–50%: The human archetype behaves too invested. Boundaries start disappearing.
+51–75%: Clear threat. Someone is watched, blocked, isolated, trapped, or controlled.
+76–100%: Full horror. Someone close is harmed, forced out, silenced, trapped, turned against the wisher, or disappears from the wisher’s life. Keep it clear, not gory.
+
+Category rules:
+LOVE / TRUE LOVE / CRUSH: Use ${archetype} as the obsessed person. They love the wisher too much. Show a door locked, phone taken, bag unpacked, number blocked, friend forced out, or rival threatened.
+HOME: Use ${archetype} as the person obsessed with the house. They believe the home belongs to them, chose them, or must be protected.
+JOB / SUCCESS: Use ${archetype} as the person obsessed with keeping the wisher successful. They treat resignation, rest, doubt, or ordinary life as threats.
+MONEY: Use ${archetype} as the person harmed by or desperate for the money. The threat comes from that person, not from the money itself.
+BODY / BEAUTY: Use ${archetype} as someone who becomes possessive of the wisher’s desirability.
+FAME: Use ${archetype} as a fan or parasocial stranger. They track the wisher and turn against anyone trying to protect the wisher.
+FRIENDSHIP: Use ${archetype} as the new best friend. They are loyal beyond reason and isolate the wisher.
+PEACE / HAPPINESS: Use ${archetype} as someone who starts removing disturbances.
+REVENGE: The first target suffers. Then someone connected to them becomes the new threat.
+
+Return only the result text.
+`;
+
+  // This local duplicate uses the in-page response engine so it works without API quota or exposed keys.
+  void prompt;
+  return getFallbackTwist(wish, curse, category, archetype);
+}
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function detectWishCategory(wish) {
+  const w = wish.toLowerCase();
+  const has = (...terms) => terms.some(t => {
+    const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(w);
+  });
+  if (has('dead pet','dead dog','dead cat','pet back','dog back','cat back','bring back','revive','resurrect','resurrection','come back to life')) return 'pet_dead';
+  if (/(boyfriend|girlfriend|partner|date)\s+(like\s+)?[a-z]/i.test(w)) return 'love_named';
+  if (has('true love','soulmate','perfect partner','the one','boyfriend','girlfriend','partner','wife','husband','date','dating','relationship','marry','marriage','crush','like me','notice me','fall for me','love','loved','loved by','ex','come back','back together','miss them','want them back','breakup')) return 'love';
+  if (has('harvard','degree','college','university','school','graduate','graduation','diploma','admission','accepted','ivy league','stanford','yale','phd','masters','exam','grades')) return 'education';
+  if (has('home','house','dream house','apartment','place of my own','mansion')) return 'home';
+  if (has('job','career','promotion','success','ceo','dream job','hired','successful','startup','company')) return 'job';
+  if (has('billion','billion dollars')) return 'money_billion';
+  if (has('rich','money','cash','dollar','dollars','million','wealthy','lottery','salary','inheritance','financial freedom','win money')) return 'money';
+  if (has('weight','lose weight','lose 10','10 kg','10 kgs','kgs','kilogram','pound','pounds','lbs','slim','skinny')) return 'body_weight';
+  if (has('beautiful','pretty','hot','attractive','glow','body','physique','fit','look better','appearance','beauty')) return 'body';
+  if (has('famous','fame','viral','followers','popular','attention','celebrity','influencer','noticed','tiktok','instagram','youtube','streamer','actor','actress','singer','musician')) return 'fame';
+  if (has('friend','friendship','best friend','lonely','no friends','belong','connection','not alone')) return 'friendship';
+  if (has('food','fancy food','expensive food','restaurant','dinner','meal','eat','eating','sushi','steak','caviar','michelin','feast','dessert','brunch')) return 'food';
+  if (has('good year','lucky year','best year','better year','great year','luck','lucky','good luck','everything goes right','things go right','fortune','fortunate')) return 'luck';
+  if (has('peace','calm','peaceful','anxiety','stress','quiet','happy','happiness','joy','content','joyful','feel good')) return 'peace';
+  if (has('revenge','suffer','regret','apologise','apology','pay for','hurt them','karma','punish')) return 'revenge';
+  if (has('healthy','health','heal','better','recover','sick','illness','cure','well')) return 'health';
+  if (has('smart','intelligent','genius','clever','brilliant','talented','gifted','skill')) return 'talent';
+  if (has('parents','mom','mother','dad','father','with my parents','see my parents','parent')) return 'parents';
+  if (has('baby','child','family','pregnant','kids','children','start a family')) return 'family';
+  if (has('dog','cat','pet','pets','puppy','kitten','animal companion')) return 'pet';
+  if (has('drive','driving','road trip','outskirts','highway','car ride','long drive','countryside','outside town')) return 'drive';
+  if (has('vacation','holiday','trip','beach','resort','hotel','honeymoon','cruise','island')) return 'vacation';
+  if (has('travel','escape','new life','move away','leave','fresh start','new city','new country')) return 'travel';
+  return 'generic';
+}
+
+function getArchetype(category, g) {
+  const neutral = {
+    love: ['their childhood crush', 'their college ex', 'their old best friend', 'someone they once loved'],
+    love_named: ['the person they wished for', 'the boyfriend-shaped miracle', 'someone too close to the wish'],
+    education: ['the admissions officer', 'the professor who remembers rejecting them', 'the classmate whose place they took', 'the dean who calls them exceptional'],
+    home: ['the previous owner', 'the neighbour across the street', 'the caretaker', 'the broker who kept a spare key'],
+    money: ['the original owner', 'the man the money was meant for', 'a creditor', 'the woman whose transfer disappeared'],
+    money_billion: ['the person counting first', 'someone who wants the billion sealed in the room', 'someone who heard the cash hit the floor'],
+    body: ['the man from the gym', 'the person who noticed first', 'a stranger who decides admiration means access'],
+    body_weight: ['the trainer who calls starvation discipline', 'the person counting every bite', 'someone who decides your body belongs to the wish'],
+    job: ['the founder', 'the boss', 'the HR head', 'the assistant who controls the calendar'],
+    fame: ['a fan', 'a stranger from the comments', 'someone who thinks they discovered them first'],
+    friendship: ['the new best friend', 'the friend who replies too fast', 'someone who calls loyalty protection'],
+    food: ['the chef who wants gratitude', 'the server who keeps bringing courses', 'someone who thinks hunger proves loyalty'],
+    luck: ['someone spared by the bad luck', 'someone keeping score', 'someone who thinks fortune can be owned'],
+    peace: ['the neighbour who wants quiet', 'the partner who starts filtering calls', 'someone who decides problems should disappear'],
+    revenge: ['the target’s brother', 'the target’s mother', 'someone who wants the revenge returned'],
+    health: ['the wellness coach', 'the doctor who will not discharge them', 'the partner who starts controlling every risk'],
+    talent: ['the mentor', 'the manager', 'the institution that calls them necessary'],
+    parents: ['the parent who remembers too much', 'someone arranging family time', 'someone who thinks family means ownership'],
+    pet_dead: ['the thing that came back', 'someone who says dead things should stay loved', 'someone guarding the memorial'],
+    drive: ['the passenger who will not get out', 'someone who likes empty roads', 'the person who packed for both of you'],
+    vacation: ['the concierge who knows too much', 'someone who booked the room forever', 'the person who thinks checkout is optional'],
+    generic: ['someone close to them', 'someone who benefits from the wish', 'someone who wants the wish to stay true']
+  };
+  const male = { love: ['his childhood crush', 'the girl from school', 'his college ex', 'his old best friend', 'the neighbour he used to like'] };
+  const female = { love: ['her childhood crush', 'the boy from school', 'her college ex', 'her old best friend', 'the neighbour she used to like'] };
+  if (g === 'male' && male[category]) return pick(male[category]);
+  if (g === 'female' && female[category]) return pick(female[category]);
+  return pick(neutral[category] || neutral.generic);
+}
+
+function getCurseTone(v) {
+  if (v < 26) return 'minor misinterpretation; nobody harmed';
+  if (v < 51) return 'non-refundable trouble; boundaries start disappearing';
+  if (v < 76) return 'no reverse wishes; someone is isolated or controlled';
+  return 'single use only; someone close is forced out, silenced, trapped, or gone';
+}
+
+function getFallbackTwist(wish, curse, category = detectWishCategory(wish), archetype = getArchetype(category, gender)) {
+  const p = getPronouns(gender);
+  const P = p.they, Pc = p.cap, Th = p.them, Tr = p.their;
+  const close = gender === 'female' ? 'her best friend' : gender === 'male' ? 'his best friend' : 'their best friend';
+  const sibling = gender === 'female' ? 'her sister' : gender === 'male' ? 'his brother' : 'their sibling';
+  const partner = gender === 'female' ? 'her boyfriend' : gender === 'male' ? 'his girlfriend' : 'their partner';
+  const roommate = gender === 'female' ? 'her roommate' : gender === 'male' ? 'his roommate' : 'their roommate';
+  const lover = gender === 'female' ? 'the boy from school' : gender === 'male' ? 'the girl from work' : 'the person from work';
+  const regretLine = 'Now you want to take the wish back.';
+
+  if (category === 'love_named') {
+    return buildNamedLoveTwist(wish);
+  }
+
+  const banks = {
+    love: [
+      `The person you wished for loves you before the broken pieces hit the floor.\nThey kiss you once, then pull back screaming like something inside them just woke up wearing their face.\nYour best friend says nobody changes that fast unless something is wrong.\nYour new love smiles, locks the bedroom door, and stabs your best friend for trying to open it.\nNow you want to take the wish back.`,
+      `Your crush loves you more than anything in the world.\nBy breakfast, they have made a shrine from your laundry, your toothbrush, and the hair from your shower drain.\nYour roommate says love should not need evidence bags.\nYour crush packs the roommate's things, leaves them outside, and comes back with blood on the tape.\nNow you want to take the wish back.`,
+      `Your best friend loves you now.\nNot as a friend. Not as a joke. As a person who has decided your life is a room they can lock from the inside.\nYour sibling tries to drive you away.\nYour best friend is already in the back seat, wearing your sibling's jacket and holding the steering wheel from behind you.\nNow you want to take the wish back.`
+    ],
+    education: [
+      `The Harvard diploma appears on your wall before sunrise.\nIt comes with a student ID, a dorm key, and four years of photos where you are smiling with strangers.\nYour best friend says someone must have lost their spot.\nThe rejected student is outside with an acceptance letter, a tire iron, and your best friend's name already crossed out.\nNow you want to take the wish back.`,
+      `You get into Harvard at 3:14 a.m.\nThe email arrives with a dorm key and a voicemail from a girl sobbing because her portal says she was never born.\nYour roommate says you should report it.\nBy breakfast, the girl is downstairs wearing your roommate's jacket and dragging your roommate by the sleeve.\nNow you want to take the wish back.`,
+      `You graduate at the top of the class.\nThe ceremony photos show you beside friends you have never met and a mother who is not your mother.\nYour sibling laughs once, then sees the real graduate at the window.\nShe presses your sibling's face to the glass and asks which one of you gets to keep a future.\nNow you want to take the wish back.`
+    ],
+    home: [
+      `The house keys appear in your hand.\nThe place is perfect, except the previous owner is across the street with a suitcase and the patience of a man who already knows the floor plan.\nYour sibling says you should leave before this gets stupid.\nThat night, the previous owner is in your kitchen making tea with a knife beside your sibling's phone.\nNow you want to take the wish back.`,
+      `You get the dream home.\nThe caretaker calls it “our place” and sleeps in the driveway with a flashlight under his blanket.\nYour best friend comes over to change the locks.\nThe caretaker changes them first, locks your best friend in the garage, and asks if you prefer breakfast at eight.\nNow you want to take the wish back.`,
+      `The apartment is yours.\nYour name is on the lease, the mailbox, and a family photo you do not remember taking.\nYour roommate says the landlord is watching from the stairs.\nThe landlord smiles, opens the basement door, and says problem tenants become storage.\nNow you want to take the wish back.`
+    ],
+    money: [
+      `The ceiling opens and a million dollars drops into your bedroom.\nFor one beautiful second, everyone is laughing under the falling cash.\nThen the girl in your bed sits up, picks up the gun from the nightstand, and says your best friend is looking at it wrong.\nYour best friend says your name once before she fires.\nNow you want to take the wish back.`,
+      `The money falls through the roof in bricks of cash.\nYour brother starts crying. The girl from last night starts counting.\nWhen your brother says you should call the police, she picks up the gun like she has been waiting for her cue.\nShe says, “Family always gets weird around money,” and shoots your brother before he reaches the door.\nNow you want to take the wish back.`,
+      `The million dollars lands on your bed in plastic-wrapped bricks.\nThe person beside you stops kissing you and starts counting.\nYour best friend says nobody should touch the money.\nThey tell your best friend to say “our money,” and when your best friend refuses, the gun goes off.\nNow you want to take the wish back.`
+    ],
+    money_billion: [
+      `You wish for a billion dollars.\nThe ceiling cracks open and cash rains down hard enough to dent the floor.\nFor three minutes, everyone is laughing.\nThen your girlfriend picks up the gun from the nightstand, tells your brother to stop touching your future, and shoots him.\nNow you want to take the wish back.`,
+      `The billion dollars arrives like weather.\nCash fills the room, blocks the door, and buries the phone before anyone can call for help.\nYour best friend says nobody should touch the money.\nYour girlfriend says your best friend is trying to steal your future, then shoots them.\nNow you want to take the wish back.`,
+      `A billion dollars drops through the roof.\nYour bed breaks first. Then the floor. Then everyone in the room stops pretending this is good news.\nYour brother says you should leave the money and run.\nYour girlfriend smiles, says billionaires do not run from family problems, and shoots your brother.\nNow you want to take the wish back.`
+    ],
+    job: [
+      `You get the dream job.\nOn your first morning, your ex is your boss and already knows which mug you used to keep at their place.\nYour wife says this is insane and tries to walk you out.\nYour ex smiles, says spouses create workplace distractions, and shoots your wife in the parking garage.\nNow you want to take the wish back.`,
+      `You get promoted.\nEveryone claps, then your ex walks in as your new manager with your calendar already color-coded.\nYour partner says nobody should know your schedule that well.\nYour ex shuts the office door, says love was always a performance review, and shoots your partner through the glass.\nNow you want to take the wish back.`,
+      `You become successful overnight.\nYour assistant starts calling you essential and cancels your weekends, your dates, and your flight home.\nYour best friend tells you to quit while you are still yourself.\nYour assistant smiles, says friends are bad for retention, and has security drag your best friend into the stairwell.\nNow you want to take the wish back.`
+    ],
+    body: [
+      `You get the body you asked for.\nAt the gym, the trainer stops saying “progress” and starts saying “ours.”\nYour best friend tries to walk you home.\nThe trainer follows, breaks your best friend's phone, and says negative influences cause relapse.\nNow you want to take the wish back.`,
+      `You become beautiful overnight.\nThe person who noticed first follows you home and calls it walking you to safety.\nYour partner says this is creepy.\nBy morning, your partner is gone and your new admirer is in the lobby wearing their coat.\nNow you want to take the wish back.`,
+      `Your glow-up works.\nPeople stare like they have been given permission, and one of them decides permission means access.\nYour roommate tells him to leave.\nHe waits outside with flowers, your mail, and a photo of your roommate sleeping.\nNow you want to take the wish back.`
+    ],
+    body_weight: [
+      `You lose the weight by morning.\nTen kilos are gone, along with your appetite, your color, and the part of your reflection that used to blink back.\nYour best friend says you need a hospital, not compliments.\nThe trainer outside your door says hospitals put weight back on people and shoves your best friend down the stairs.\nNow you want to take the wish back.`,
+      `You wake up lighter.\nThe scale is smiling at a number you wanted, but your jeans are folded on the bed like someone already dressed the version of you they preferred.\nYour roommate says you look sick.\nThe person in the hallway says sick is just another word people use when they miss control, then slams your roommate's hand in the door.\nNow you want to take the wish back.`,
+      `The weight is gone.\nSo is your hunger, your sleep, and every photo where you looked like yourself.\nYour best friend tries to make you eat.\nThe trainer is at your door ten minutes later with a scale, your best friend's address, and no patience left.\nNow you want to take the wish back.`
+    ],
+    fame: [
+      `You go viral before lunch.\nA fan sends flowers, then photos of the flowers outside places you never posted.\nYour best friend says you should report it.\nBy evening, the fan posts your best friend's address, calls them jealous, and waits outside with a knife wrapped in fan mail.\nNow you want to take the wish back.`,
+      `You become famous overnight.\nA stranger waits in the lobby with a scrapbook of deleted posts and the confidence of someone who says “we” about a person they have never met.\nYour best friend tells you not to engage.\nBy morning, your best friend is trending for “controlling you,” and the stranger is inside their apartment.\nNow you want to take the wish back.`,
+      `Everyone knows your name.\nOne follower knows your pharmacy, your lunch order, and the exact sound your door buzzer makes.\nYour sibling says fame should not come with a map.\nThe follower replies from the hallway before you do, holding your sibling's phone: “It came with directions.”\nNow you want to take the wish back.`
+    ],
+    friendship: [
+      `You have a best friend now.\nThey are outside your door before you finish texting that you feel lonely.\nYour old best friend says nobody should arrive that fast.\nBy dinner, the new friend has your old best friend's phone, bloody knuckles, and a question about why your passcode was their birthday.\nNow you want to take the wish back.`,
+      `You are not lonely anymore.\nYour new best friend cancels bad dates, blocks flaky friends, and answers the door before you reach it.\nYour sibling comes over and calls it control.\nYour new friend smiles, says family is why you were lonely, and buries the kitchen knife in your sibling's shoulder.\nNow you want to take the wish back.`,
+      `You get the friend you always wanted.\nThey know when you are sad before you do, which is sweet until they start punishing the people who caused it.\nYour roommate says they are scared.\nThe friend writes “roommate” under “causes sadness” and asks whether the bathtub drains well.\nNow you want to take the wish back.`
+    ],
+    food: [
+      `You get the fancy meal.\nCourses arrive until the table looks less like dinner and more like evidence.\nYour best friend says nobody ordered the raw course.\nThe chef steps out smiling, locks the dining room, and says appetite is rude when it quits early.\nNow you want to take the wish back.`,
+      `You eat the best food of your life.\nThe server watches every bite like a proposal, refilling your plate before you can swallow.\nYour sibling says you are turning gray.\nThe server says the meal was for you, then drags your sibling into the kitchen while the dessert bell keeps ringing.\nNow you want to take the wish back.`,
+      `The restaurant gives you everything for free.\nThe bill arrives anyway, written in names instead of numbers.\nYour best friend laughs once, then sees their name under dessert.\nThe hostess says substitutions are not available, opens the kitchen doors, and the chef pulls your best friend inside.\nNow you want to take the wish back.`
+    ],
+    luck: [
+      `You get your lucky year.\nEvery red light turns green, every bill disappears, every stranger moves out of your way before you ask.\nYour best friend says luck should not hurt people for inconveniencing you.\nThat night, the friend who took your parking spot is found apologizing to your empty driveway with both hands broken.\nNow you want to take the wish back.`,
+      `You have a good year.\nSo good that every bad thing meant for you lands on someone nearby instead.\nYour brother says his whole life is falling apart while yours keeps improving.\nWhen he tries to leave, your new lucky charm pulls the door shut and says family can absorb one more bad day.\nNow you want to take the wish back.`,
+      `Everything goes right for you.\nThe waiter spills boiling coffee on the person about to insult you. The elevator breaks after you get out. The car behind you crashes before it can honk.\nYour best friend says this is not luck, it is choosing targets.\nThat night, your best friend steps off the curb, and every streetlight goes green except the one that could save them.\nNow you want to take the wish back.`
+    ],
+    peace: [
+      `You get peace.\nThe calls stop first, then the crying upstairs, then the neighbor who always asks if you are okay.\nYour best friend comes over and says this is not peace.\nThe person keeping you calm opens the door, pulls your best friend inside, and the screaming stops before the kettle boils.\nNow you want to take the wish back.`,
+      `You get calm.\nYour partner starts filtering calls and removing anyone who raises your pulse.\nYour mother comes over crying.\nYour partner walks her to the elevator, holds the doors open, and lets go of her hand too late.\nNow you want to take the wish back.`,
+      `Your anxiety disappears.\nSo do your unread messages, your difficult relatives, and the neighbor who keeps asking if you are okay.\nYour best friend comes over and says calm should not have a body count.\nThe person helping you relax smiles, locks the bathroom door behind your best friend, and turns on the tub.\nNow you want to take the wish back.`
+    ],
+    revenge: [
+      `They regret hurting you.\nFirst come the apology texts, then the crying calls, then their brother outside your office asking what you did.\nYour best friend walks you to the parking lot and says revenge is getting out of hand.\nThe brother steps out from behind your best friend's car and swings the tire iron before either of you can run.\nNow you want to take the wish back.`,
+      `The target suffers exactly as requested.\nThen their mother arrives with questions and a voice so calm it should have a warning label.\nYour sibling tells you not to answer.\nShe waits beside your sibling's car, and when you look again, the passenger window is red.\nNow you want to take the wish back.`,
+      `They finally apologize.\nThey apologize at work, at dinner, and from outside your window at 3 a.m.\nYour roommate says this is not remorse; this is a schedule.\nThe person you punished smiles, says regret needs witnesses, and pulls your roommate into view.\nNow you want to take the wish back.`
+    ],
+    health: [
+      `You are healthy now.\nThe doctor calls it miraculous and starts removing anything risky, sweet, late, loud, or recognizably human.\nYour partner brings cake to celebrate.\nThe doctor takes it from their hand, injects them with something clear, and says stress spreads.\nNow you want to take the wish back.`,
+      `You recover completely.\nYour wellness coach decides stress is the last disease.\nYour best friend says you need to get out of the house.\nBy morning, the coach has changed the locks and written REST on the windows while your best friend bangs from outside.\nNow you want to take the wish back.`,
+      `Your body heals overnight.\nThe person taking care of you starts calling every emotion a symptom.\nYour sibling says you need fresh air.\nThe caretaker locks the window, writes “fresh air” on the list of triggers, and tapes your sibling's mouth shut.\nNow you want to take the wish back.`
+    ],
+    talent: [
+      `You become brilliant.\nYour mentor stops calling you gifted and starts calling you necessary.\nYour sibling says you have not slept in two days.\nThe mentor locks the lab door, says your sibling is interrupting the work, and bolts them out.\nNow you want to take the wish back.`,
+      `You get the talent you wanted.\nYour manager books every hour and calls rest “a leak in the asset.”\nYour best friend tries to take you home.\nThe studio door locks from the outside, and your manager says friends are bad for output while your best friend pounds on the glass.\nNow you want to take the wish back.`,
+      `You become a genius.\nPeople bring you problems, then food, then locks for the room where you solve them.\nYour partner says this is not a life.\nYour mentor says your partner is slowing the miracle down, then locks them outside with the others.\nNow you want to take the wish back.`
+    ],
+    family: [
+      `You get the family you wanted.\nThey arrive with groceries, framed photos, and memories of vacations you never took.\nYour best friend says none of these people are in your old pictures.\nYour new mother smiles, asks why your best friend is separating the family, and sends your new father to fix it.\nNow you want to take the wish back.`,
+      `The baby arrives before sunrise.\nNo hospital, no paperwork, just a crib in your room and a woman downstairs saying you promised her this life.\nYour sibling says you need to call someone.\nThe woman is already holding your sibling's phone and rocking the crib with one bloody foot.\nNow you want to take the wish back.`,
+      `Your family is whole now.\nEveryone sits at the table smiling at places set for people who used to be dead, gone, or better off away.\nYour partner whispers that this is not possible.\nYour father turns from the table and says partners are not family until they survive dinner.\nNow you want to take the wish back.`
+    ],
+    parents: [
+      `You get a perfect day with your parents.\nThey make breakfast, call you sweetheart, and remember a childhood you never had.\nYour best friend says the photos on the fridge changed overnight.\nYour mother smiles, asks why your best friend is taking you away again, and reaches for the carving knife.\nNow you want to take the wish back.`,
+      `You are with your parents again.\nThe living room is warm, the TV is on, and nobody mentions the years that were supposed to have happened.\nYour sibling comes over and says your parents do not know who they are anymore.\nYour father lowers the volume, calls your sibling an outsider, and pins them to the carpet while your mother keeps smiling at you.\nNow you want to take the wish back.`,
+      `Your parents finally understand you.\nThey understand your schedule, your passwords, and which friends make you doubt them.\nYour roommate says this is not love; it is surveillance with snacks.\nYour mother packs your roommate's bag, then your father drags it out while it is still moving.\nNow you want to take the wish back.`
+    ],
+    pet: [
+      `You get pets.\nBy morning, there are twelve of them in your apartment, all clean, all quiet, all staring at the same spot beside your bed.\nYour best friend says animals do not arrange themselves like a memorial.\nThe smallest one drags your best friend's keys under the couch, and the biggest one lunges when your best friend reaches for them.\nNow you want to take the wish back.`,
+      `The pet you wanted is waiting at your door with a red ribbon around its neck.\nIt knows your name, your route home, and which people make your shoulders tense.\nYour roommate says animals should not stand between you and the door.\nThat night, the pet scratches STAY into your roommate's door until the screaming stops.\nNow you want to take the wish back.`,
+      `You get the perfect pet.\nIt follows every command except leave, stop, and let them go.\nYour partner raises their voice once.\nThe pet bites your partner's ankle and drags them down the hall when they reach for the door.\nNow you want to take the wish back.`
+    ],
+    pet_dead: [
+      `Your dead pet does not come back alive.\nInstead, the living room becomes a memorial: flowers around the food bowl, candles in the carpet, medicine breath in the air.\nYour best friend says you should not touch what is moving under the blanket.\nThe blanket turns toward your best friend, and something underneath starts crawling fast.\nNow you want to take the wish back.`,
+      `Your dead pet comes home clean, warm, and wrong.\nFor one minute, you are crying too hard to notice the smell of medicine on its breath.\nYour best friend says you should not touch it.\nThe pet turns its head toward your best friend, opens its mouth, and screams in your voice.\nNow you want to take the wish back.`,
+      `You wish for your pet back.\nThe collar appears first, then the bowl, then the sound of claws crossing the kitchen where there is nothing to cast a shadow.\nYour roommate says dead things should stay buried.\nSomething under the table growls at the word buried, and your roommate's chair tips backward.\nNow you want to take the wish back.`
+    ],
+    travel: [
+      `You get your fresh start.\nThe new apartment has your clothes in the closet, your food in the fridge, and neighbors who already know your secrets.\nYour best friend flies out to bring you home and finds the address taped over every exit.\nSomeone in the kitchen takes your best friend's boarding pass, burns it over the stove, and says you are happier here.\nNow you want to take the wish back.`,
+      `You escape.\nThe city changes around you overnight: new street, new job, new name on the mailbox.\nYour sibling finds you and says your old room is empty and nobody remembers you lived there.\nThe woman at your new door says family makes moving harder, then locks the chain from outside and cuts your sibling's hand when they reach for it.\nNow you want to take the wish back.`,
+      `You get to leave everything behind.\nAt first, that sounds beautiful.\nThen your phone deletes every number except one you do not recognize.\nA stranger sends a photo of your best friend tied to your old bed and asks whether you want the last person who remembers you deleted too.\nNow you want to take the wish back.`
+    ],
+    drive: [
+      `You get the drive to the outskirts.\nThe city lights fall away, the radio dies, and the person in the passenger seat starts giving directions without looking up.\nYour best friend is in the back seat, begging you to turn around.\nThe passenger smiles at the dark road ahead, locks the windows, and says the outskirts need a witness.\nNow you want to take the wish back.`,
+      `You go for a long drive.\nFor the first hour, it is perfect: empty road, warm air, nobody asking anything from you.\nYour sibling is beside you until the next rest stop.\nThe person in the back seat steps out with your sibling's phone, says family problems belong in the trunk, and opens it for you to see.\nNow you want to take the wish back.`,
+      `You drive out of town.\nThe gas tank stays full, the road keeps repeating, and every exit sign points back to the same abandoned rest stop.\nYour friend begs you to turn around.\nThe car clicks all four locks, and the person in the back seat laughs like they have been there for miles.\nNow you want to take the wish back.`
+    ],
+    vacation: [
+      `You get the vacation.\nThe hotel upgrades you to a honeymoon suite, and your boyfriend is already inside with both room keys.\nYour best friend says the front desk has no record of your booking and tries to pull you into the hallway.\nYour boyfriend smiles, says friends ruin everything beautiful, and pushes your best friend over the balcony rail.\nNow you want to take the wish back.`,
+      `You wake up at the resort.\nThe ocean is perfect, the towels are warm, and your ex is lying beside you with both passports under their pillow.\nYour sibling says you need to leave before this gets worse.\nYour ex smiles, says vacations are better without witnesses, and shoves your sibling through the glass balcony door.\nNow you want to take the wish back.`,
+      `You get the beach holiday.\nThe water is blue enough to look fake, and the person beside you keeps saying you finally look happy.\nYour best friend walks down to the shoreline and says nobody can find your flight home.\nThe person beside you throws your phone into the ocean, then holds your best friend's head under the water until they stop asking.\nNow you want to take the wish back.`
+    ],
+    generic: [
+      `It happens exactly the way you asked.\nThe person beside you sees it happen first and decides the wish belongs to both of you.\nYour best friend says you need to leave before this gets worse.\nThe person beside you locks the door, breaks your best friend's phone, and says nobody is leaving your miracle.\nNow you want to take the wish back.`,
+      `You get exactly what you wanted.\nThe person you trusted most starts smiling like they were waiting for this part.\nYour sibling says this is not how miracles work.\nThat person puts the kitchen knife on the table and tells your sibling to leave before they ruin it.\nNow you want to take the wish back.`,
+      `The wish works.\nIt works so quickly that the room goes quiet.\nYour best friend says maybe this was a mistake.\nThe person smiling hardest asks why your best friend is still allowed to talk, then answers the question with the nearest bottle.\nNow you want to take the wish back.`
+    ]
+  };
+
+  const options = banks[category] || banks.generic;
+  return enforceRegretLock(toSecondPerson(pick(options), p), p);
+}
+
+function toSecondPerson(text, p) {
+  return text;
+}
+
+function buildNamedLoveTwist(wishText) {
+  const desired = extractDesiredPerson(wishText);
+  return [
+    `You get someone exactly like ${desired}.`,
+    `They know your jokes, your favorite songs, and the exact way ${desired} used to make you feel chosen.`,
+    `Your best friend says this is not romance; it is a copy wearing a smile.`,
+    `The copy smiles back, says originals make people ungrateful, and stabs your best friend for saying ${desired}'s name.`,
+    `Now you want to take the wish back.`
+  ].join('\n');
+}
+
+function extractDesiredPerson(wishText) {
+  const clean = String(wishText || '').replace(/[^\w\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
+  const patterns = [
+    /\b(?:boyfriend|girlfriend|partner)\s+like\s+([a-z][\w'-]*)/i,
+    /\bdate\s+([a-z][\w'-]*)/i,
+    /\b(?:boyfriend|girlfriend|partner)\s+([a-z][\w'-]*)/i,
+  ];
+  for (const pattern of patterns) {
+    const found = clean.match(pattern);
+    if (found && found[1]) return capitalize(found[1].toLowerCase());
+  }
+  return 'the person you asked for';
+}
+
+function enforceRegretLock(text, p) {
+  const lines = text.split('\n').filter(Boolean);
+  const last = lines[lines.length - 1] || '';
+  if (/take.*wish back|no refunds|no take-backs|cannot be undone|permanent/i.test(last)) {
+    return lines.join('\n');
+  }
+  const regret = 'Now you want to take the wish back.';
+  if (lines.length >= 6) lines[lines.length - 1] = regret;
+  else lines.push(regret);
+  return lines.join('\n');
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+
+
+/* ── SHOW RESULT ── */
+async function showResult(twistPromise) {
+  dots('dl2');
+  show('sr');
+  document.getElementById('rw').textContent = '"' + wish + '"';
+  const mood = getMood(curseLevel);
+  const badge = document.getElementById('rcbadge');
+  badge.innerHTML = mood.label + '&nbsp;&nbsp;' + curseLevel + '% Wish Damage';
+  badge.style.color = mood.col; badge.style.borderColor = mood.col;
+  const rtEl = document.getElementById('rt');
+  rtEl.innerHTML = '<span class="twist-loading">The Willow is deciding your fate</span>';
+  try {
+    const twist = await twistPromise;
+    rtEl.innerHTML = ''; rtEl.textContent = twist;
+    rtEl.classList.add('twist-reveal');
+  } catch(e) {
+    rtEl.textContent = getFallbackTwist(wish, curseLevel);
+    rtEl.classList.add('twist-reveal');
+  }
+}
+
+/* ── DOWNLOAD ── */
+async function dlCard() {
+  const btn = document.getElementById('bdl');
+  btn.innerHTML = '<span class="spin">&#9203;</span> Capturing\u2026'; btn.disabled = true;
+  try {
+    const c = await html2canvas(document.getElementById('rc'), {
+      backgroundColor:'#F2E4C4', scale:2.5, useCORS:true, logging:false
+    });
+    const a = document.createElement('a');
+    a.download = 'one-wish-willow-' + Date.now() + '.png';
+    a.href = c.toDataURL('image/png'); a.click();
+    btn.textContent = 'Downloaded. Warn your friends.';
+    setTimeout(() => { btn.innerHTML = 'Download Card &amp; Warn Your Friends'; btn.disabled = false; }, 3200);
+  } catch(e) { btn.textContent = 'Try again'; btn.disabled = false; }
+}
+
+function backToWish() {
+  show('sl');
+}
+
+function shareOnTwitter() {
+  const result = document.getElementById('rt')?.textContent?.trim() || '';
+  const wishLine = wish ? `I wished for: "${shorten(wish, 70)}"` : 'I made one wish.';
+  const resultLine = shorten(result.split('\n').find(Boolean) || 'Now you want to take the wish back.', 135);
+  const shareText = `${wishLine}\n${resultLine}\nNow I want to take the wish back.`;
+  const url = new URL('https://twitter.com/intent/tweet');
+  url.searchParams.set('text', shareText);
+  url.searchParams.set('url', window.location.href);
+  window.open(url.toString(), '_blank', 'noopener,noreferrer');
+  reset();
+}
+
+function shorten(text, max) {
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  return clean.slice(0, Math.max(0, max - 1)).replace(/\s+\S*$/, '') + '…';
+}
+
+/* ── RESET ── */
+function reset() {
+  wish = ''; gender = 'male';
+  wi.value = ''; document.getElementById('cc').textContent = '0 / 120';
+  document.querySelectorAll('.gpick').forEach(b => b.classList.remove('active'));
+  document.querySelector('.gpick[data-g="male"]').classList.add('active');
+  show('sl');
+}
+</script>
+</body>
+</html>
