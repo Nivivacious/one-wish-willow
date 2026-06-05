@@ -1623,6 +1623,8 @@ function detectWishCategory(wish) {
   });
   if (has('dead pet','dead dog','dead cat','pet back','dog back','cat back','bring back','revive','resurrect','resurrection','come back to life')) return 'pet_dead';
   if (/(boyfriend|girlfriend|partner|date)\s+(like\s+)?[a-z]/i.test(w)) return 'love_named';
+  if (has('sex','hook up','hookup','hooking up','sleep with','one night stand','get laid','make out','kiss','physical intimacy','intimacy')) return 'intimacy';
+  if (has('portfolio','dream portfolio','design portfolio','creative portfolio','case study','case studies','book of work','work samples','behance','dribbble')) return 'portfolio';
   if (has('true love','soulmate','perfect partner','the one','boyfriend','girlfriend','partner','wife','husband','date','dating','relationship','marry','marriage','crush','like me','notice me','fall for me','love','loved','loved by','ex','come back','back together','miss them','want them back','breakup')) return 'love';
   if (has('harvard','degree','college','university','school','graduate','graduation','diploma','admission','accepted','ivy league','stanford','yale','phd','masters','exam','grades')) return 'education';
   if (has('home','house','dream house','apartment','place of my own','mansion')) return 'home';
@@ -1652,6 +1654,7 @@ function getArchetype(category, g) {
   const neutral = {
     love: ['their childhood crush', 'their college ex', 'their old best friend', 'someone they once loved'],
     love_named: ['the person they wished for', 'the boyfriend-shaped miracle', 'someone too close to the wish'],
+    intimacy: ['the person from last night', 'the ex who never learned boundaries', 'someone who mistakes desire for ownership'],
     education: ['the admissions officer', 'the professor who remembers rejecting them', 'the classmate whose place they took', 'the dean who calls them exceptional'],
     home: ['the previous owner', 'the neighbour across the street', 'the caretaker', 'the broker who kept a spare key'],
     money: ['the original owner', 'the man the money was meant for', 'a creditor', 'the woman whose transfer disappeared'],
@@ -1659,6 +1662,7 @@ function getArchetype(category, g) {
     body: ['the man from the gym', 'the person who noticed first', 'a stranger who decides admiration means access'],
     body_weight: ['the trainer who calls starvation discipline', 'the person counting every bite', 'someone who decides your body belongs to the wish'],
     job: ['the founder', 'the boss', 'the HR head', 'the assistant who controls the calendar'],
+    portfolio: ['the creative director', 'the client who thinks the work belongs to them', 'the recruiter who keeps asking for one more sample'],
     fame: ['a fan', 'a stranger from the comments', 'someone who thinks they discovered them first'],
     friendship: ['the new best friend', 'the friend who replies too fast', 'someone who calls loyalty protection'],
     food: ['the chef who wants gratitude', 'the server who keeps bringing courses', 'someone who thinks hunger proves loyalty'],
@@ -1707,6 +1711,11 @@ function getFallbackTwist(wish, curse, category = detectWishCategory(wish), arch
       `Your crush loves you more than anything in the world.\nBy breakfast, they have made a shrine from your laundry, your toothbrush, and the hair from your shower drain.\nYour roommate says love should not need evidence bags.\nYour crush packs the roommate's things, leaves them outside, and comes back with blood on the tape.\nNow you want to take the wish back.`,
       `Your best friend loves you now.\nNot as a friend. Not as a joke. As a person who has decided your life is a room they can lock from the inside.\nYour sibling tries to drive you away.\nYour best friend is already in the back seat, wearing your sibling's jacket and holding the steering wheel from behind you.\nNow you want to take the wish back.`
     ],
+    intimacy: [
+      `You get the night you asked for.\nBy morning, the person beside you knows your phone password, your mother's name, and which friends tell you to leave early.\nYour best friend comes over and says this is moving too fast.\nThe person from last night smiles, locks the bedroom door, and stabs your best friend for interrupting something private.\nNow you want to take the wish back.`,
+      `Someone wants you exactly the way you wanted to be wanted.\nThey kiss you once, then start screaming whenever you move toward the door.\nYour roommate says desire should not sound like a hostage situation.\nThey pick up the lamp, hit your roommate, and ask why everyone keeps trying to make you lonely again.\nNow you want to take the wish back.`,
+      `You wake up with the person you wished for beside you.\nThey have already deleted your dating apps, blocked your exes, and written their name on your mirror in lipstick.\nYour sibling comes over to take you home.\nThe person in your bed says family is bad for chemistry, then pushes your sibling down the stairs.\nNow you want to take the wish back.`
+    ],
     education: [
       `The Harvard diploma appears on your wall before sunrise.\nIt comes with a student ID, a dorm key, and four years of photos where you are smiling with strangers.\nYour best friend says someone must have lost their spot.\nThe rejected student is outside with an acceptance letter, a tire iron, and your best friend's name already crossed out.\nNow you want to take the wish back.`,
       `You get into Harvard at 3:14 a.m.\nThe email arrives with a dorm key and a voicemail from a girl sobbing because her portal says she was never born.\nYour roommate says you should report it.\nBy breakfast, the girl is downstairs wearing your roommate's jacket and dragging your roommate by the sleeve.\nNow you want to take the wish back.`,
@@ -1731,6 +1740,11 @@ function getFallbackTwist(wish, curse, category = detectWishCategory(wish), arch
       `You get the dream job.\nOn your first morning, your ex is your boss and already knows which mug you used to keep at their place.\nYour wife says this is insane and tries to walk you out.\nYour ex smiles, says spouses create workplace distractions, and shoots your wife in the parking garage.\nNow you want to take the wish back.`,
       `You get promoted.\nEveryone claps, then your ex walks in as your new manager with your calendar already color-coded.\nYour partner says nobody should know your schedule that well.\nYour ex shuts the office door, says love was always a performance review, and shoots your partner through the glass.\nNow you want to take the wish back.`,
       `You become successful overnight.\nYour assistant starts calling you essential and cancels your weekends, your dates, and your flight home.\nYour best friend tells you to quit while you are still yourself.\nYour assistant smiles, says friends are bad for retention, and has security drag your best friend into the stairwell.\nNow you want to take the wish back.`
+    ],
+    portfolio: [
+      `You get the dream portfolio.\nEvery case study is perfect, every metric is impossible, and every screenshot shows work you do not remember making.\nYour best friend says someone else must have lost a career for this.\nThe creative director opens the archive room, points to your best friend's name on the stolen project folder, and locks the door behind them.\nNow you want to take the wish back.`,
+      `Your portfolio goes live overnight.\nRecruiters call before sunrise, praising projects that used to belong to people you admire.\nYour old classmate comes over with proof one of the case studies was theirs.\nThe client who hired you smiles, says attribution ruins clean design, and shoves your classmate's laptop through the window.\nNow you want to take the wish back.`,
+      `You get the book of work everyone dreams about.\nThe pages turn by themselves, adding logos, awards, and testimonials from clients you have never met.\nYour roommate says the newest project has their name erased from the credits.\nThe recruiter at your door says collaboration is a liability, then drags your roommate's portfolio into the trash and lights it.\nNow you want to take the wish back.`
     ],
     body: [
       `You get the body you asked for.\nAt the gym, the trainer stops saying “progress” and starts saying “ours.”\nYour best friend tries to walk you home.\nThe trainer follows, breaks your best friend's phone, and says negative influences cause relapse.\nNow you want to take the wish back.`,
