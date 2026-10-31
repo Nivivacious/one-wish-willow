@@ -12,7 +12,6 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Special+Elite&family=Permanent+Marker&family=Oswald:wght@700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 /* ═══ COLOUR TOKENS — sampled from onewishwillow.com ═══ */
@@ -405,6 +404,16 @@ input[type=range].cslider::-moz-range-thumb{
 /* twist reveal animation */
 @keyframes typeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .twist-reveal{animation:typeIn .45s ease-out forwards;}
+#rt{cursor:pointer;}
+#rt .tl{display:block;margin-bottom:.5em;opacity:0;transform:translateY(5px);filter:blur(2px);transition:opacity .5s ease,transform .5s ease,filter .5s ease;}
+#rt .tl.on{opacity:1;transform:none;filter:none;}
+#rt .tl:last-child{margin-top:.35em;font-style:normal;color:var(--red);}
+#rt .tl.possessed{color:var(--red);font-style:normal;letter-spacing:.06em;animation:possess .52s steps(2) 1;}
+@keyframes possess{0%{transform:translate(-2px,1px) skewX(-8deg)}25%{transform:translate(3px,-1px)}50%{transform:translate(-1px,2px) skewX(6deg)}75%{transform:translate(2px,0)}100%{transform:none}}
+@keyframes shake{0%,100%{transform:none}15%{transform:translate(-6px,3px) rotate(-.4deg)}30%{transform:translate(5px,-4px) rotate(.4deg)}45%{transform:translate(-4px,2px)}60%{transform:translate(3px,-2px)}80%{transform:translate(-1px,1px)}}
+.shake{animation:shake .42s ease-out 1;}
+.btn.stay{letter-spacing:.3em;animation:possess .4s steps(2) 1;}
+@media (prefers-reduced-motion: reduce){#rt .tl{transition:none;filter:none;transform:none}}
 .twist-loading{font-family:'Special Elite',cursive;font-size:.88rem;color:var(--red);font-style:italic;}
 @keyframes ell{0%{content:'.'}33%{content:'..'}66%{content:'...'}100%{content:'.'}}
 .twist-loading::after{content:'.';animation:ell 1.2s steps(1) infinite;}
@@ -1077,11 +1086,11 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
     <div class="slider-wrap">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
         <div class="slider-title">How badly should it go?</div>
-        <div class="curse-pct" id="cpct">50%</div>
+        <div class="curse-pct" id="cpct">100%</div>
       </div>
-      <div class="curse-mood" id="cmood">Minor Misinterpretation</div>
-      <input type="range" class="cslider" id="cslider" min="0" max="100" value="50"
-             style="--fill:50%;" oninput="updateSlider(this)"/>
+      <div class="curse-mood" id="cmood" style="color:#8B1A10">No Refunds. No Exceptions.</div>
+      <input type="range" class="cslider" id="cslider" min="0" max="100" value="100"
+             style="--fill:100%;" oninput="updateSlider(this)"/>
       <div class="slider-ends">
         <span>Barely wrong</span>
         <span>No refunds</span>
@@ -1177,7 +1186,7 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
   </div>
 
   <div style="display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:14px;width:100%;max-width:360px;">
-    <button class="btn inv" style="width:100%;text-align:center;" onclick="backToWish()">Back</button>
+    <button class="btn inv" id="bback" style="width:100%;text-align:center;" onclick="backToWish()">Back</button>
     <button class="btn pulse" style="width:100%;text-align:center;" onclick="shareOnTwitter()">Get Another Wish By Sharing On Twitter</button>
   </div>
   <div style="height:14px;"></div>
@@ -1193,7 +1202,7 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
 ══════════════════════════════════════════════════════════ -->
 <script>
 let wish = '';
-let curseLevel = 50;
+let curseLevel = 100;
 let gender = 'male';
 
 function pickGender(btn) {
@@ -1299,11 +1308,11 @@ class Sp {
   draw(){
     const a=this.life/this.ml;
     px.save();px.globalAlpha=a;px.fillStyle=this.c;px.shadowBlur=10;px.shadowColor=this.c;
-    px.beginPath();px.arc(this.x,this.y,this.sz*a,0,Math.PI*2);px.fill();px.restore();
+    px.beginPath();px.arc(this.x,this.y,Math.max(0,this.sz*a),0,Math.PI*2);px.fill();px.restore();
   }
 }
 function boom(x,y,n=140){for(let i=0;i<n;i++)parts.push(new Sp(x,y));}
-(function pl(){px.clearRect(0,0,pc.width,pc.height);parts=parts.filter(p=>p.life>0);parts.forEach(p=>{p.step();p.draw();});requestAnimationFrame(pl);})();
+(function pl(){px.clearRect(0,0,pc.width,pc.height);parts.forEach(p=>p.step());parts=parts.filter(p=>p.life>0);parts.forEach(p=>p.draw());requestAnimationFrame(pl);})();
 
 /* ── CRACK SOUND ── */
 function playCrack() {
@@ -1381,6 +1390,7 @@ function playCrack() {
 }
 
 /* ── MAIN GO ── */
+let snapping = false;
 function go() {
   const v = wi.value.trim();
   if (!v) {
@@ -1389,6 +1399,8 @@ function go() {
     setTimeout(() => { wi.style.outline = ''; }, 1800);
     return;
   }
+  if (snapping) return;
+  snapping = true;
   wish = v;
   runSnap();
 }
@@ -1497,6 +1509,7 @@ function runSnap() {
         phase=2;start=ts;playCrack();
         const fl=document.createElement('div');fl.className='sf';document.body.appendChild(fl);setTimeout(()=>fl.remove(),650);
         const gl=document.createElement('div');gl.className='go';document.body.appendChild(gl);setTimeout(()=>gl.remove(),450);
+        if(!reduceMotion){stage.classList.remove('shake');void stage.offsetWidth;stage.classList.add('shake');}
         const r=stage.getBoundingClientRect();boom(r.left+W/2,r.top+H*.48,150);
         drawCrackStamp();
         art.className='snap-art cracked';
@@ -1508,6 +1521,7 @@ function runSnap() {
       if(ts-start>=POST){
         phase=3;cancelAnimationFrame(fid);
         ss.classList.remove('on');
+        snapping = false;
         co.style.display='none';
         art.className='snap-art';
         showResult(twistPromise);
@@ -1519,101 +1533,261 @@ function runSnap() {
   drawRitual(0);fid=requestAnimationFrame(animate);
 }
 
-/* ── AI TWIST ── */
-async function fetchTwist(wish, curse) {
-  const p = getPronouns(gender);
-  const curseTone = getCurseTone(curse);
-  const category = detectWishCategory(wish);
-  const archetype = getArchetype(category, gender);
-
-  const prompt = `
-You are writing the result for an interactive horror site.
-
-Do not mention the film title in the output.
-Do not mention the Willow unless absolutely necessary.
-Do not use customer support unless it makes the ending sharper.
-Do not write generic cursed-wish copy.
-
-The story logic is inspired by a horror plot where a wish for love makes a real person obsessively attached, possessive, jealous, and dangerous.
-
-Adapt that same engine for every wish:
-The wish comes true.
-A human being becomes obsessed, jealous, desperate, possessive, protective, or dangerous because the wish came true.
-Anyone who threatens the wish becomes a problem.
-Someone close tries to intervene.
-The obsessed person visibly removes, silences, traps, isolates, threatens, or turns against that person.
-The wish is technically fulfilled, but now the wisher is trapped by the consequences.
-
-For love wishes, the obsessed person loves the wisher.
-For non-love wishes, do NOT make the object/concept obsessed with the wisher.
-Make a human being obsessed because of the object/concept.
-
-USER WISH: "${wish}"
-CURSE LEVEL: ${curse}% — ${curseTone}
-WISHER PRONOUNS: ${p.they}/${p.them}/${p.their}
-WISH CATEGORY: ${category}
-HUMAN ARCHETYPE TO USE: ${archetype}
-
-Write ONLY the result.
-
-Output rules:
-* 4 to 6 short lines.
-* Each line must be separated by a newline.
-* No emojis.
-* No title.
-* No preamble.
-* No markdown.
-* No “Granted.”
-* No “Your wish.”
-* Do not mention the film title.
-* Do not say “at this tier.”
-* Do not say “category.”
-* Do not say “removal process.”
-* Do not say “the Willow notes.”
-* Do not say “configuration.”
-* Do not say “performing a protective function.”
-* Avoid abstract explanation.
-* Avoid poetic fog.
-* Show one clear scary action.
-
-Pronoun clarity:
-Use the archetype noun often.
-Avoid confusing sentences like “he stands between him.”
-Use names or relationship labels if needed.
-
-Structure:
-Line 1: Confirm the wish happened and cast the human archetype.
-Line 2: Show the obsession/possession/desperation becoming too much.
-Line 3: Someone close intervenes.
-Line 4: The obsessed person does one visible scary action.
-Line 5 or 6: End with a sharp horror-comedy line showing the wish worked too well.
-
-Curse scale:
-0–25%: Eerie but mild. Nobody harmed. One uncomfortable social consequence.
-26–50%: The human archetype behaves too invested. Boundaries start disappearing.
-51–75%: Clear threat. Someone is watched, blocked, isolated, trapped, or controlled.
-76–100%: Full horror. Someone close is harmed, forced out, silenced, trapped, turned against the wisher, or disappears from the wisher’s life. Keep it clear, not gory.
-
-Category rules:
-LOVE / TRUE LOVE / CRUSH: Use ${archetype} as the obsessed person. They love the wisher too much. Show a door locked, phone taken, bag unpacked, number blocked, friend forced out, or rival threatened.
-HOME: Use ${archetype} as the person obsessed with the house. They believe the home belongs to them, chose them, or must be protected.
-JOB / SUCCESS: Use ${archetype} as the person obsessed with keeping the wisher successful. They treat resignation, rest, doubt, or ordinary life as threats.
-MONEY: Use ${archetype} as the person harmed by or desperate for the money. The threat comes from that person, not from the money itself.
-BODY / BEAUTY: Use ${archetype} as someone who becomes possessive of the wisher’s desirability.
-FAME: Use ${archetype} as a fan or parasocial stranger. They track the wisher and turn against anyone trying to protect the wisher.
-FRIENDSHIP: Use ${archetype} as the new best friend. They are loyal beyond reason and isolate the wisher.
-PEACE / HAPPINESS: Use ${archetype} as someone who starts removing disturbances.
-REVENGE: The first target suffers. Then someone connected to them becomes the new threat.
-
-Return only the result text.
-`;
-
-  // This local duplicate uses the in-page response engine so it works without API quota or exposed keys.
-  void prompt;
-  return getFallbackTwist(wish, curse, category, archetype);
-}
+/* ── FORTUNE ENGINE ──
+   Every fortune follows the film's arc, cut off at a point set by the
+   "How badly should it go?" slider:
+     0–33   Act I   — it works, and the person it touches is no longer quite themselves.
+     34–66  Act II  — a friend tries to warn you, and pays for it.
+     67–100 Act III — you try to undo it. You can't. Nobody gets out.
+   Tokens: {W}/{w} obsessed person, {o} them/her/him, {p} their/her/his,
+           {F}/{f} the friend who tries to save you. Lines are capitalised after filling. */
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+const ROMANTIC = new Set(['love', 'love_named', 'intimacy']);
+
+/* Who the wish lands on, and how it starts. g: 'x' = opposite of the wisher (neutral if
+   non-binary / rather not say), 'n' = they, 'f' = she, 'm' = he. */
+const OPENINGS = {
+  love: [
+    { who: ['the girl you’ve loved since homeroom', 'the boy you’ve loved since homeroom', 'the person you’ve loved since homeroom'], short: ['the girl', 'the boy', 'your new love'], g: 'x', lines: [
+      'Ten seconds after the stick snaps, {w} is standing on {p} own porch, staring at the front door like it belongs to a stranger.',
+      'Then {w} turns, smiles too wide, and walks straight to your car. Loving you more than anyone in the world. Exactly as worded.' ] },
+    { who: ['your best friend of six years'], short: 'your new love', g: 'x', lines: [
+      '{W} falls in love with you overnight. Breakfast on your table, your name in every sentence, {p} bag already by your door.',
+      'Nobody changes that fast. {W} didn’t change. Something else just moved in and learned how to smile.' ] },
+  ],
+  love_named: [
+    { who: null, g: 'x', lines: [
+      '{W} is at your door before the pieces hit the floor, saying your name like {p} whole life was a rehearsal for it.',
+      '{W} knows your jokes, your songs, your passcode. You have never once seen {o} blink while looking at you.' ] },
+  ],
+  intimacy: [
+    { who: ['the person from last night'], g: 'x', lines: [
+      'You get the night you asked for. In the morning {w} is still there, and {p} bag is already unpacked.',
+      '{W} wants you exactly the way you wanted to be wanted, and has decided that means forever.' ] },
+  ],
+  education: [
+    { who: ['the student whose spot you took'], short: 'the student', g: 'x', lines: [
+      'Your acceptance letter arrives at 3:14 a.m. There is a name whited out under yours.',
+      '{W} moves in across the hall, sits in your seat before you get to class, and wears your hoodie because it smells like you.' ] },
+    { who: ['the dean'], g: 'n', lines: [
+      'You graduate top of the class. {W} calls you a miracle in front of everyone.',
+      '{W} starts waiting outside your dorm at night, grading every person you talk to.' ] },
+  ],
+  home: [
+    { who: ['the previous owner'], g: 'n', lines: [
+      'The keys are in your hand by morning. The house is perfect, down to the family photos you don’t remember posing for.',
+      '{W} never really left. There’s a spare key you didn’t know about, and a second toothbrush beside yours every morning.' ] },
+    { who: ['the neighbour across the street'], short: 'the neighbour', g: 'x', lines: [
+      'You get the dream home.',
+      '{W} decides the house chose you both, and starts setting a second place at your table.' ] },
+  ],
+  job: [
+    { who: ['your new boss'], g: 'x', lines: [
+      'You get the job. On your first day {w} calls you essential and hands you a key to {p} office.',
+      'By week two {w} has your calendar, your passwords, and a framed photo of you on {p} desk with everyone else cut out.' ] },
+    { who: ['the founder'], g: 'n', lines: [
+      'You get promoted overnight. Everyone claps except the person whose name used to be on your door.',
+      '{W} starts calling you the future of the company, and locks the office so the future can’t leave.' ] },
+  ],
+  portfolio: [
+    { who: ['the creative director'], g: 'n', lines: [
+      'Your portfolio goes live overnight: perfect case studies, impossible numbers, work you don’t remember making.',
+      '{W} falls in love with it, then with you, and starts deciding who you’re allowed to work with.' ] },
+  ],
+  money: [
+    { who: ['the person in your bed'], g: 'x', lines: [
+      'Hundred-dollar bills rain from the ceiling, and for three whole minutes everyone is laughing.',
+      'Then {w} stops laughing and starts counting. Out loud. Calling it “our money.”' ] },
+    { who: ['your partner'], g: 'x', lines: [
+      'The money lands in your account at midnight. Every cent.',
+      '{W} starts sleeping on the bank statements and asking who else knows.' ] },
+  ],
+  money_billion: [
+    { who: ['the person beside you'], g: 'x', lines: [
+      'You wish for a billion dollars, half joking. The ceiling answers: hundred-dollar bills, falling and falling until the floor disappears.',
+      '{W} goes very quiet, then very sweet, and starts saying “we” about every single dollar.' ] },
+  ],
+  body: [
+    { who: ['the person who noticed first'], short: 'your admirer', g: 'x', lines: [
+      'You wake up beautiful. Strangers stop mid-sentence when you walk past.',
+      '{W} decides that noticing you means owning you. Your coat goes missing. You find it in {p} bed.' ] },
+  ],
+  body_weight: [
+    { who: ['your new trainer'], g: 'x', lines: [
+      'The weight is gone by morning, along with your appetite and the colour in your face.',
+      '{W} calls it discipline, counts every bite for you, and sleeps in front of the fridge.' ] },
+  ],
+  fame: [
+    { who: ['your biggest fan'], g: 'x', lines: [
+      'You go viral before lunch. By dinner your name is a hashtag.',
+      '{W} knows your pharmacy, your lunch order, and the exact sound your door makes when it closes behind you.' ] },
+  ],
+  friendship: [
+    { who: ['your new best friend'], g: 'x', lines: [
+      'You are never lonely again. {W} is at your door before you finish typing “I’m lonely.”',
+      '{W} says nobody will ever understand you like this, staring at your old friends the whole time.' ] },
+  ],
+  food: [
+    { who: ['the chef'], g: 'n', lines: [
+      'You get the meal of your life. Course after course, and every night it’s on the house.',
+      '{W} watches every bite from the kitchen door, and starts setting your place whether you come or not.' ] },
+  ],
+  luck: [
+    { who: ['the person keeping your luck'], short: 'your lucky charm', g: 'x', lines: [
+      'Everything goes right. Green lights, free coffee, a raise you never asked for.',
+      '{W} starts making sure of it, and every bad thing meant for you lands on someone you love.' ] },
+  ],
+  peace: [
+    { who: ['the person keeping you calm'], short: 'your keeper', g: 'x', lines: [
+      'The noise stops. The calls stop. The worry stops.',
+      '{W} decides anything that raises your pulse is a threat, and starts removing threats.' ] },
+  ],
+  revenge: [
+    { who: ['the person you wished it on'], short: 'your enemy', g: 'x', lines: [
+      '{W} finally regrets it. At work, at dinner, outside your window at 3 a.m.',
+      'Then the apologies turn into love letters, and the love letters turn into a key to your front door.' ] },
+  ],
+  health: [
+    { who: ['your doctor'], g: 'n', lines: [
+      'You heal overnight. The scans are clean. {W} calls it a miracle and refuses to discharge you.',
+      '{W} starts treating every friend, every late night, every feeling as a symptom to remove.' ] },
+  ],
+  talent: [
+    { who: ['your mentor'], g: 'n', lines: [
+      'You become brilliant overnight. Everyone wants a piece of you.',
+      '{W} wants all of it, and starts locking the studio from the outside so nobody can borrow you.' ] },
+  ],
+  parents: [
+    { who: ['your mother'], g: 'f', lines: [
+      'Your parents come back into your life all at once: breakfast made, your old room repainted, nobody mentioning the missing years.',
+      '{W} stands in your doorway every night, watching you sleep like you’re still a baby. You are not a baby.' ] },
+  ],
+  family: [
+    { who: ['your new family'], g: 'n', lines: [
+      'You get the family you wished for, with framed photos of holidays you never took.',
+      'They arrive smiling and never stop, and {w} decides anyone outside these walls is trying to break you apart.' ] },
+  ],
+  pet: [
+    { who: ['the pet’s previous owner'], short: 'the old owner', g: 'x', lines: [
+      'The perfect pet is on your doorstep with a red ribbon on its collar.',
+      '{W} is across the street, watching it, and you, and leaving notes: “We could share.”' ] },
+  ],
+  pet_dead: [
+    { who: ['your new roommate'], g: 'x', lines: [
+      'Your pet comes home. Not alive. Just home: laid out on the kitchen floor in a ring of flower petals.',
+      '{W} found the body in the trash, says that wasn’t proper, and asks if you’d like to say a few words before it goes back in.' ] },
+  ],
+  drive: [
+    { who: ['the passenger'], g: 'x', lines: [
+      'You get the long drive. Empty road, warm air, windows cranked all the way down.',
+      '{W} rests {p} head on your shoulder, face flickering from love to panic and back, and won’t let you take the exit home.' ] },
+  ],
+  vacation: [
+    { who: ['the person beside you'], g: 'x', lines: [
+      'You wake up somewhere beautiful. Ocean, sun, a room key with two names on it.',
+      '{W} has both passports under {p} pillow and says this is the happiest {w} has ever been. {W} means forever.' ] },
+  ],
+  travel: [
+    { who: ['your new neighbour'], g: 'x', lines: [
+      'You get your fresh start: new city, new street, new name on the mailbox.',
+      '{W} already knows your name, your old address, and which friends you’d call if you got scared.' ] },
+  ],
+  generic: [
+    { who: ['the person closest to you'], short: 'the one closest to you', g: 'x', lines: [
+      'It happens exactly as worded. Not as meant. As worded.',
+      '{W} is the first to notice, and decides your wish belongs to both of you now.' ] },
+  ],
+};
+
+/* Act I — the signs that something is wearing them. */
+const SIGNS = [
+  'For one second {w} looks at you like a stranger. Then the smile comes back, too wide: “Nothing. I’m fine.”',
+  'At 3:32 a.m. you wake up and {w} is standing in the darkest corner of your bedroom, wearing your coat because it smells like you.',
+  'You leave for work. Eleven hours later {w} is standing in the exact same spot by the door, in a puddle, smiling: “I was waiting for you.”',
+  '{W} lies about small things, then huge things, and when you ask why, screams until the whole restaurant goes silent: “Why does it matter?”',
+  '{W} carves a tiny heart into your arm with a crystal, giggling, and when you try to get out of bed, shrieks one word: “STAAAY.”',
+  'Your table becomes a shrine: your baby photos, your toothbrush, your whole life. Everyone else has been cut out of the pictures.',
+];
+const ROMANTIC_SIGNS = [
+  'Halfway through your first kiss, {w} jerks back screaming “What’s going on?!” Then the smile snaps back on. “Nothing.”',
+  'At a party, {w} kisses you in front of everyone, sobbing, then tells the room they will all die without ever being loved like this.',
+];
+
+/* End of Act I — no one is dead yet. That is the only good news. */
+const TRAPPED = [
+  'At 3 a.m. {w} whispers in the old voice, the real one: “Kill me. Please. Before the other one wakes up.”',
+  '“I can be anything you want me to be,” {w} sobs, and you realise there is nobody left inside to say no.',
+  '“I love you in every reality,” {w} says, and you understand that includes the ones where you run.',
+  'You ask if {w} is happy. The answer comes back flat, like a machine on default: “Yeah. For sure.”',
+];
+
+/* Act II — the friend who sees it. */
+const FRIENDS = [
+  'your best friend',
+  'the friend who has secretly loved you for years',
+  'your oldest friend',
+  'the only friend still answering your calls',
+];
+const WARNINGS = [
+  '{F} pulls you aside and says it out loud: nobody changes that fast unless something is very wrong.',
+  '{F} texts you at midnight: “Meet me at the park. I need to tell you some things.”',
+  '{F} begs you to stay away for one week, just to see if any of it is real.',
+];
+const KILLS = [
+  '{W} comes through the car window with a brick before {f} can finish the sentence. Every blow sets off the horn.',
+  '{W} finds {f} first. The brick goes through the window, and the horn doesn’t stop for a long time.',
+];
+const AFTERMATH = [
+  '“I’m sorry you had to see that,” {w} says, breathing hard. “But it’s kinda your fault.”',
+  'By sunrise you’re folding {f} into a tuba case full of sandbags, because {w} said “Nod your head yes,” and you nodded.',
+  'In {f}’s pocket is a letter nobody got to open. It says congratulations.',
+];
+
+/* Act III — you can’t take it back. */
+const UNDO = [
+  'You run back to the shop for another Willow. The clerk doesn’t even look up: “Even if you didn’t know, you knew.”',
+  'You beg someone to wish it all undone. Laughing, they wish for a billion dollars instead, and the money keeps falling while you scream.',
+];
+const UNDO_ROMANTIC = 'You snap a second Willow and whisper “I wish you didn’t love me.” {W} is already behind you: “I think you’ll want me to love you.”';
+const UNDO_GENERIC = 'You snap a second Willow and whisper “undo it.” {W} is already behind you, holding the brick: “You only get one.”';
+const ENDINGS = [
+  '{W} takes the little silver revolver from the safe at work, shoots the next friend who knocks, and makes you scream that you love {o} until it sounds true.',
+  'You swallow every pill in the cabinet. {W} snaps the last Willow, and the last thing you ever feel is exactly what {w} wished for.',
+  'Your last words are “in this life and the next.” {W} takes it as a promise, and picks up the gun.',
+];
+
+const REGRET = 'Now you want to take the wish back.';
+
+/* ── WISH READING ── */
+const NAME_STOPWORDS = new Set(('a an the my me i you your his her their our someone somebody anyone everyone everybody '
+  + 'who whom that which and or but with to for of in on at by from is was were be being been will would could should '
+  + 'can may might must this these those next tonight today tomorrow again more someday soon forever now back already '
+  + 'like just really finally only someone\'s crush ex boss partner boyfriend girlfriend friend people person him them it '
+  + 'every all no not never always love loved loves').split(/\s+/));
+
+function extractDesiredPerson(wishText) {
+  const clean = String(wishText || '').toLowerCase().replace(/[^\w\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
+  const NAME = "([a-z][\\w'-]*(?:\\s+[a-z][\\w'-]*)?)";
+  const patterns = [
+    new RegExp('\\b(?:boyfriend|girlfriend|partner|husband|wife|someone|somebody)\\s+like\\s+' + NAME),
+    new RegExp('\\b(?:date|marry|kiss|be with)\\s+' + NAME),
+    new RegExp('\\b(?:boyfriend|girlfriend|partner|husband|wife)\\s+' + NAME),
+    new RegExp('\\bwish\\s+' + NAME + '\\s+(?:loved|loves|would love|liked|likes|would like|wanted|noticed|would notice|fell for|falls for|would fall for)\\s+me\\b'),
+    new RegExp('\\b(?:make|get)\\s+' + NAME + '\\s+(?:love|like|notice|want|fall for)\\s+me\\b'),
+  ];
+  for (const pattern of patterns) {
+    const m = clean.match(pattern);
+    if (!m) continue;
+    const words = m[1].split(' ').filter(Boolean);
+    const kept = [];
+    for (const wd of words) { if (NAME_STOPWORDS.has(wd)) break; kept.push(wd); }
+    if (kept.length) return kept.map(capitalize).join(' ');
+  }
+  return '';
+}
 
 function detectWishCategory(wish) {
   const w = wish.toLowerCase();
@@ -1621,270 +1795,136 @@ function detectWishCategory(wish) {
     const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(w);
   });
-  if (has('dead pet','dead dog','dead cat','pet back','dog back','cat back','bring back','revive','resurrect','resurrection','come back to life')) return 'pet_dead';
-  if (/(boyfriend|girlfriend|partner|date)\s+(like\s+)?[a-z]/i.test(w)) return 'love_named';
-  if (has('sex','hook up','hookup','hooking up','sleep with','one night stand','get laid','make out','kiss','physical intimacy','intimacy')) return 'intimacy';
+  if (has('dead pet','dead dog','dead cat','pet back','dog back','cat back','bring back','revive','resurrect','resurrection','come back to life','back from the dead')) return 'pet_dead';
+  if (has('revenge','suffer','pay for','hurt them','karma','punish','get what they deserve')) return 'revenge';
+  if (extractDesiredPerson(wish)) return 'love_named';
+  if (has('sex','hook up','hookup','hooking up','sleep with','one night stand','get laid','make out','physical intimacy','intimacy')) return 'intimacy';
   if (has('portfolio','dream portfolio','design portfolio','creative portfolio','case study','case studies','book of work','work samples','behance','dribbble')) return 'portfolio';
-  if (has('true love','soulmate','perfect partner','the one','boyfriend','girlfriend','partner','wife','husband','date','dating','relationship','marry','marriage','crush','like me','notice me','fall for me','love','loved','loved by','ex','come back','back together','miss them','want them back','breakup')) return 'love';
-  if (has('harvard','degree','college','university','school','graduate','graduation','diploma','admission','accepted','ivy league','stanford','yale','phd','masters','exam','grades')) return 'education';
+  if (has('true love','soulmate','perfect partner','the one','boyfriend','girlfriend','partner','wife','husband','date','dating','relationship','marry','marriage','crush','like me','notice me','fall for me','love','loved','loved by','loves me','kiss','ex','back together','miss them','want them back','breakup')) return 'love';
+  if (has('harvard','degree','college','university','school','graduate','graduation','diploma','admission','accepted','ivy league','stanford','yale','phd','masters','exam','exams','grades')) return 'education';
   if (has('home','house','dream house','apartment','place of my own','mansion')) return 'home';
-  if (has('job','career','promotion','success','ceo','dream job','hired','successful','startup','company')) return 'job';
-  if (has('billion','billion dollars')) return 'money_billion';
-  if (has('rich','money','cash','dollar','dollars','million','wealthy','lottery','salary','inheritance','financial freedom','win money')) return 'money';
-  if (has('weight','lose weight','lose 10','10 kg','10 kgs','kgs','kilogram','pound','pounds','lbs','slim','skinny')) return 'body_weight';
-  if (has('beautiful','pretty','hot','attractive','glow','body','physique','fit','look better','appearance','beauty')) return 'body';
-  if (has('famous','fame','viral','followers','popular','attention','celebrity','influencer','noticed','tiktok','instagram','youtube','streamer','actor','actress','singer','musician')) return 'fame';
-  if (has('friend','friendship','best friend','lonely','no friends','belong','connection','not alone')) return 'friendship';
-  if (has('food','fancy food','expensive food','restaurant','dinner','meal','eat','eating','sushi','steak','caviar','michelin','feast','dessert','brunch')) return 'food';
+  if (has('job','career','promotion','promoted','success','ceo','dream job','hired','successful','startup','company','boss')) return 'job';
+  if (has('billion','billion dollars','billionaire')) return 'money_billion';
+  if (has('rich','money','cash','dollar','dollars','million','millionaire','wealthy','lottery','salary','inheritance','financial freedom','win money')) return 'money';
+  if (has('weight','lose weight','kg','kgs','kilo','kilos','kilogram','pound','pounds','lbs','slim','skinny','thin')) return 'body_weight';
+  if (has('beautiful','pretty','hot','attractive','glow','glow up','body','physique','fit','look better','appearance','beauty','handsome','gorgeous')) return 'body';
+  if (has('famous','fame','viral','followers','popular','attention','celebrity','influencer','noticed','tiktok','instagram','youtube','streamer','actor','actress','singer','musician','star')) return 'fame';
+  if (has('friend','friends','friendship','best friend','lonely','no friends','belong','connection','not alone')) return 'friendship';
+  if (has('food','fancy food','expensive food','restaurant','dinner','meal','eat','eating','sushi','steak','caviar','michelin','feast','dessert','brunch','pizza')) return 'food';
   if (has('good year','lucky year','best year','better year','great year','luck','lucky','good luck','everything goes right','things go right','fortune','fortunate')) return 'luck';
   if (has('peace','calm','peaceful','anxiety','stress','quiet','happy','happiness','joy','content','joyful','feel good')) return 'peace';
-  if (has('revenge','suffer','regret','apologise','apology','pay for','hurt them','karma','punish')) return 'revenge';
-  if (has('healthy','health','heal','better','recover','sick','illness','cure','well')) return 'health';
+  if (has('regret','apologise','apologize','apology','sorry')) return 'revenge';
+  if (has('healthy','health','heal','get well','get better','feel better','recover','sick','illness','cure','cancer')) return 'health';
   if (has('smart','intelligent','genius','clever','brilliant','talented','gifted','skill')) return 'talent';
-  if (has('parents','mom','mother','dad','father','with my parents','see my parents','parent')) return 'parents';
+  if (has('parents','mom','mum','mother','dad','father','with my parents','see my parents','parent')) return 'parents';
   if (has('baby','child','family','pregnant','kids','children','start a family')) return 'family';
   if (has('dog','cat','pet','pets','puppy','kitten','animal companion')) return 'pet';
-  if (has('drive','driving','road trip','outskirts','highway','car ride','long drive','countryside','outside town')) return 'drive';
+  if (has('drive','driving','road trip','outskirts','highway','car ride','long drive','countryside','outside town','car')) return 'drive';
   if (has('vacation','holiday','trip','beach','resort','hotel','honeymoon','cruise','island')) return 'vacation';
   if (has('travel','escape','new life','move away','leave','fresh start','new city','new country')) return 'travel';
   return 'generic';
 }
 
-function getArchetype(category, g) {
-  const neutral = {
-    love: ['their childhood crush', 'their college ex', 'their old best friend', 'someone they once loved'],
-    love_named: ['the person they wished for', 'the boyfriend-shaped miracle', 'someone too close to the wish'],
-    intimacy: ['the person from last night', 'the ex who never learned boundaries', 'someone who mistakes desire for ownership'],
-    education: ['the admissions officer', 'the professor who remembers rejecting them', 'the classmate whose place they took', 'the dean who calls them exceptional'],
-    home: ['the previous owner', 'the neighbour across the street', 'the caretaker', 'the broker who kept a spare key'],
-    money: ['the original owner', 'the man the money was meant for', 'a creditor', 'the woman whose transfer disappeared'],
-    money_billion: ['the person counting first', 'someone who wants the billion sealed in the room', 'someone who heard the cash hit the floor'],
-    body: ['the man from the gym', 'the person who noticed first', 'a stranger who decides admiration means access'],
-    body_weight: ['the trainer who calls starvation discipline', 'the person counting every bite', 'someone who decides your body belongs to the wish'],
-    job: ['the founder', 'the boss', 'the HR head', 'the assistant who controls the calendar'],
-    portfolio: ['the creative director', 'the client who thinks the work belongs to them', 'the recruiter who keeps asking for one more sample'],
-    fame: ['a fan', 'a stranger from the comments', 'someone who thinks they discovered them first'],
-    friendship: ['the new best friend', 'the friend who replies too fast', 'someone who calls loyalty protection'],
-    food: ['the chef who wants gratitude', 'the server who keeps bringing courses', 'someone who thinks hunger proves loyalty'],
-    luck: ['someone spared by the bad luck', 'someone keeping score', 'someone who thinks fortune can be owned'],
-    peace: ['the neighbour who wants quiet', 'the partner who starts filtering calls', 'someone who decides problems should disappear'],
-    revenge: ['the target’s brother', 'the target’s mother', 'someone who wants the revenge returned'],
-    health: ['the wellness coach', 'the doctor who will not discharge them', 'the partner who starts controlling every risk'],
-    talent: ['the mentor', 'the manager', 'the institution that calls them necessary'],
-    parents: ['the parent who remembers too much', 'someone arranging family time', 'someone who thinks family means ownership'],
-    pet_dead: ['the thing that came back', 'someone who says dead things should stay loved', 'someone guarding the memorial'],
-    drive: ['the passenger who will not get out', 'someone who likes empty roads', 'the person who packed for both of you'],
-    vacation: ['the concierge who knows too much', 'someone who booked the room forever', 'the person who thinks checkout is optional'],
-    generic: ['someone close to them', 'someone who benefits from the wish', 'someone who wants the wish to stay true']
-  };
-  const male = { love: ['his childhood crush', 'the girl from school', 'his college ex', 'his old best friend', 'the neighbour he used to like'] };
-  const female = { love: ['her childhood crush', 'the boy from school', 'her college ex', 'her old best friend', 'the neighbour she used to like'] };
-  if (g === 'male' && male[category]) return pick(male[category]);
-  if (g === 'female' && female[category]) return pick(female[category]);
-  return pick(neutral[category] || neutral.generic);
+/* 'x' follows the wish if it says who (“a boyfriend”, “a girl”), otherwise the opposite of the wisher. */
+function resolveGender(g, wisherGender, wishText) {
+  if (g !== 'x') return g;
+  const w = ' ' + String(wishText || '').toLowerCase() + ' ';
+  const male = /[^a-z](boyfriend|husband|him|his|he|man|guy|boy|prince)[^a-z]/.test(w);
+  const female = /[^a-z](girlfriend|wife|her|she|woman|girl|lady|princess)[^a-z]/.test(w);
+  if (male && !female) return 'm';
+  if (female && !male) return 'f';
+  return wisherGender === 'male' ? 'f' : wisherGender === 'female' ? 'm' : 'n';
 }
+const PRONOUNS = { f: { o: 'her', p: 'her' }, m: { o: 'him', p: 'his' }, n: { o: 'them', p: 'their' } };
 
-function getCurseTone(v) {
-  if (v < 26) return 'minor misinterpretation; nobody harmed';
-  if (v < 51) return 'non-refundable trouble; boundaries start disappearing';
-  if (v < 76) return 'no reverse wishes; someone is isolated or controlled';
-  return 'single use only; someone close is forced out, silenced, trapped, or gone';
-}
+function tierFor(curse) { return curse < 34 ? 1 : curse < 67 ? 2 : 3; }
 
-function getFallbackTwist(wish, curse, category = detectWishCategory(wish), archetype = getArchetype(category, gender)) {
-  const p = getPronouns(gender);
-  const P = p.they, Pc = p.cap, Th = p.them, Tr = p.their;
-  const close = gender === 'female' ? 'her best friend' : gender === 'male' ? 'his best friend' : 'their best friend';
-  const sibling = gender === 'female' ? 'her sister' : gender === 'male' ? 'his brother' : 'their sibling';
-  const partner = gender === 'female' ? 'her boyfriend' : gender === 'male' ? 'his girlfriend' : 'their partner';
-  const roommate = gender === 'female' ? 'her roommate' : gender === 'male' ? 'his roommate' : 'their roommate';
-  const lover = gender === 'female' ? 'the boy from school' : gender === 'male' ? 'the girl from work' : 'the person from work';
-  const regretLine = 'Now you want to take the wish back.';
+function buildFortune(wishText, curse, wisherGender) {
+  const category = detectWishCategory(wishText);
+  const romantic = ROMANTIC.has(category);
+  const opening = pick(OPENINGS[category] || OPENINGS.generic);
+  const g = resolveGender(opening.g, wisherGender, wishText);
+  const pr = PRONOUNS[g];
+  const gi = g === 'f' ? 0 : g === 'm' ? 1 : 2;
 
+  // Full description while the wish is granted, a shorter name once the horror starts.
+  let who, short;
   if (category === 'love_named') {
-    return buildNamedLoveTwist(wish);
+    who = extractDesiredPerson(wishText);
+    short = who.split(' ')[0];
+  } else {
+    who = opening.who.length === 3 ? opening.who[gi] : pick(opening.who);
+    short = Array.isArray(opening.short) ? opening.short[gi] : (opening.short || who);
   }
 
-  const banks = {
-    love: [
-      `The person you wished for loves you before the broken pieces hit the floor.\nThey kiss you once, then pull back screaming like something inside them just woke up wearing their face.\nYour best friend says nobody changes that fast unless something is wrong.\nYour new love smiles, locks the bedroom door, and stabs your best friend for trying to open it.\nNow you want to take the wish back.`,
-      `Your crush loves you more than anything in the world.\nBy breakfast, they have made a shrine from your laundry, your toothbrush, and the hair from your shower drain.\nYour roommate says love should not need evidence bags.\nYour crush packs the roommate's things, leaves them outside, and comes back with blood on the tape.\nNow you want to take the wish back.`,
-      `Your best friend loves you now.\nNot as a friend. Not as a joke. As a person who has decided your life is a room they can lock from the inside.\nYour sibling tries to drive you away.\nYour best friend is already in the back seat, wearing your sibling's jacket and holding the steering wheel from behind you.\nNow you want to take the wish back.`
-    ],
-    intimacy: [
-      `You get the night you asked for.\nBy morning, the person beside you knows your phone password, your mother's name, and which friends tell you to leave early.\nYour best friend comes over and says this is moving too fast.\nThe person from last night smiles, locks the bedroom door, and stabs your best friend for interrupting something private.\nNow you want to take the wish back.`,
-      `Someone wants you exactly the way you wanted to be wanted.\nThey kiss you once, then start screaming whenever you move toward the door.\nYour roommate says desire should not sound like a hostage situation.\nThey pick up the lamp, hit your roommate, and ask why everyone keeps trying to make you lonely again.\nNow you want to take the wish back.`,
-      `You wake up with the person you wished for beside you.\nThey have already deleted your dating apps, blocked your exes, and written their name on your mirror in lipstick.\nYour sibling comes over to take you home.\nThe person in your bed says family is bad for chemistry, then pushes your sibling down the stairs.\nNow you want to take the wish back.`
-    ],
-    education: [
-      `The Harvard diploma appears on your wall before sunrise.\nIt comes with a student ID, a dorm key, and four years of photos where you are smiling with strangers.\nYour best friend says someone must have lost their spot.\nThe rejected student is outside with an acceptance letter, a tire iron, and your best friend's name already crossed out.\nNow you want to take the wish back.`,
-      `You get into Harvard at 3:14 a.m.\nThe email arrives with a dorm key and a voicemail from a girl sobbing because her portal says she was never born.\nYour roommate says you should report it.\nBy breakfast, the girl is downstairs wearing your roommate's jacket and dragging your roommate by the sleeve.\nNow you want to take the wish back.`,
-      `You graduate at the top of the class.\nThe ceremony photos show you beside friends you have never met and a mother who is not your mother.\nYour sibling laughs once, then sees the real graduate at the window.\nShe presses your sibling's face to the glass and asks which one of you gets to keep a future.\nNow you want to take the wish back.`
-    ],
-    home: [
-      `The house keys appear in your hand.\nThe place is perfect, except the previous owner is across the street with a suitcase and the patience of a man who already knows the floor plan.\nYour sibling says you should leave before this gets stupid.\nThat night, the previous owner is in your kitchen making tea with a knife beside your sibling's phone.\nNow you want to take the wish back.`,
-      `You get the dream home.\nThe caretaker calls it “our place” and sleeps in the driveway with a flashlight under his blanket.\nYour best friend comes over to change the locks.\nThe caretaker changes them first, locks your best friend in the garage, and asks if you prefer breakfast at eight.\nNow you want to take the wish back.`,
-      `The apartment is yours.\nYour name is on the lease, the mailbox, and a family photo you do not remember taking.\nYour roommate says the landlord is watching from the stairs.\nThe landlord smiles, opens the basement door, and says problem tenants become storage.\nNow you want to take the wish back.`
-    ],
-    money: [
-      `The ceiling opens and a million dollars drops into your bedroom.\nFor one beautiful second, everyone is laughing under the falling cash.\nThen the girl in your bed sits up, picks up the gun from the nightstand, and says your best friend is looking at it wrong.\nYour best friend says your name once before she fires.\nNow you want to take the wish back.`,
-      `The money falls through the roof in bricks of cash.\nYour brother starts crying. The girl from last night starts counting.\nWhen your brother says you should call the police, she picks up the gun like she has been waiting for her cue.\nShe says, “Family always gets weird around money,” and shoots your brother before he reaches the door.\nNow you want to take the wish back.`,
-      `The million dollars lands on your bed in plastic-wrapped bricks.\nThe person beside you stops kissing you and starts counting.\nYour best friend says nobody should touch the money.\nThey tell your best friend to say “our money,” and when your best friend refuses, the gun goes off.\nNow you want to take the wish back.`
-    ],
-    money_billion: [
-      `You wish for a billion dollars.\nThe ceiling cracks open and cash rains down hard enough to dent the floor.\nFor three minutes, everyone is laughing.\nThen your girlfriend picks up the gun from the nightstand, tells your brother to stop touching your future, and shoots him.\nNow you want to take the wish back.`,
-      `The billion dollars arrives like weather.\nCash fills the room, blocks the door, and buries the phone before anyone can call for help.\nYour best friend says nobody should touch the money.\nYour girlfriend says your best friend is trying to steal your future, then shoots them.\nNow you want to take the wish back.`,
-      `A billion dollars drops through the roof.\nYour bed breaks first. Then the floor. Then everyone in the room stops pretending this is good news.\nYour brother says you should leave the money and run.\nYour girlfriend smiles, says billionaires do not run from family problems, and shoots your brother.\nNow you want to take the wish back.`
-    ],
-    job: [
-      `You get the dream job.\nOn your first morning, your ex is your boss and already knows which mug you used to keep at their place.\nYour wife says this is insane and tries to walk you out.\nYour ex smiles, says spouses create workplace distractions, and shoots your wife in the parking garage.\nNow you want to take the wish back.`,
-      `You get promoted.\nEveryone claps, then your ex walks in as your new manager with your calendar already color-coded.\nYour partner says nobody should know your schedule that well.\nYour ex shuts the office door, says love was always a performance review, and shoots your partner through the glass.\nNow you want to take the wish back.`,
-      `You become successful overnight.\nYour assistant starts calling you essential and cancels your weekends, your dates, and your flight home.\nYour best friend tells you to quit while you are still yourself.\nYour assistant smiles, says friends are bad for retention, and has security drag your best friend into the stairwell.\nNow you want to take the wish back.`
-    ],
-    portfolio: [
-      `You get the dream portfolio.\nEvery case study is perfect, every metric is impossible, and every screenshot shows work you do not remember making.\nYour best friend says someone else must have lost a career for this.\nThe creative director opens the archive room, points to your best friend's name on the stolen project folder, and locks the door behind them.\nNow you want to take the wish back.`,
-      `Your portfolio goes live overnight.\nRecruiters call before sunrise, praising projects that used to belong to people you admire.\nYour old classmate comes over with proof one of the case studies was theirs.\nThe client who hired you smiles, says attribution ruins clean design, and shoves your classmate's laptop through the window.\nNow you want to take the wish back.`,
-      `You get the book of work everyone dreams about.\nThe pages turn by themselves, adding logos, awards, and testimonials from clients you have never met.\nYour roommate says the newest project has their name erased from the credits.\nThe recruiter at your door says collaboration is a liability, then drags your roommate's portfolio into the trash and lights it.\nNow you want to take the wish back.`
-    ],
-    body: [
-      `You get the body you asked for.\nAt the gym, the trainer stops saying “progress” and starts saying “ours.”\nYour best friend tries to walk you home.\nThe trainer follows, breaks your best friend's phone, and says negative influences cause relapse.\nNow you want to take the wish back.`,
-      `You become beautiful overnight.\nThe person who noticed first follows you home and calls it walking you to safety.\nYour partner says this is creepy.\nBy morning, your partner is gone and your new admirer is in the lobby wearing their coat.\nNow you want to take the wish back.`,
-      `Your glow-up works.\nPeople stare like they have been given permission, and one of them decides permission means access.\nYour roommate tells him to leave.\nHe waits outside with flowers, your mail, and a photo of your roommate sleeping.\nNow you want to take the wish back.`
-    ],
-    body_weight: [
-      `You lose the weight by morning.\nTen kilos are gone, along with your appetite, your color, and the part of your reflection that used to blink back.\nYour best friend says you need a hospital, not compliments.\nThe trainer outside your door says hospitals put weight back on people and shoves your best friend down the stairs.\nNow you want to take the wish back.`,
-      `You wake up lighter.\nThe scale is smiling at a number you wanted, but your jeans are folded on the bed like someone already dressed the version of you they preferred.\nYour roommate says you look sick.\nThe person in the hallway says sick is just another word people use when they miss control, then slams your roommate's hand in the door.\nNow you want to take the wish back.`,
-      `The weight is gone.\nSo is your hunger, your sleep, and every photo where you looked like yourself.\nYour best friend tries to make you eat.\nThe trainer is at your door ten minutes later with a scale, your best friend's address, and no patience left.\nNow you want to take the wish back.`
-    ],
-    fame: [
-      `You go viral before lunch.\nA fan sends flowers, then photos of the flowers outside places you never posted.\nYour best friend says you should report it.\nBy evening, the fan posts your best friend's address, calls them jealous, and waits outside with a knife wrapped in fan mail.\nNow you want to take the wish back.`,
-      `You become famous overnight.\nA stranger waits in the lobby with a scrapbook of deleted posts and the confidence of someone who says “we” about a person they have never met.\nYour best friend tells you not to engage.\nBy morning, your best friend is trending for “controlling you,” and the stranger is inside their apartment.\nNow you want to take the wish back.`,
-      `Everyone knows your name.\nOne follower knows your pharmacy, your lunch order, and the exact sound your door buzzer makes.\nYour sibling says fame should not come with a map.\nThe follower replies from the hallway before you do, holding your sibling's phone: “It came with directions.”\nNow you want to take the wish back.`
-    ],
-    friendship: [
-      `You have a best friend now.\nThey are outside your door before you finish texting that you feel lonely.\nYour old best friend says nobody should arrive that fast.\nBy dinner, the new friend has your old best friend's phone, bloody knuckles, and a question about why your passcode was their birthday.\nNow you want to take the wish back.`,
-      `You are not lonely anymore.\nYour new best friend cancels bad dates, blocks flaky friends, and answers the door before you reach it.\nYour sibling comes over and calls it control.\nYour new friend smiles, says family is why you were lonely, and buries the kitchen knife in your sibling's shoulder.\nNow you want to take the wish back.`,
-      `You get the friend you always wanted.\nThey know when you are sad before you do, which is sweet until they start punishing the people who caused it.\nYour roommate says they are scared.\nThe friend writes “roommate” under “causes sadness” and asks whether the bathtub drains well.\nNow you want to take the wish back.`
-    ],
-    food: [
-      `You get the fancy meal.\nCourses arrive until the table looks less like dinner and more like evidence.\nYour best friend says nobody ordered the raw course.\nThe chef steps out smiling, locks the dining room, and says appetite is rude when it quits early.\nNow you want to take the wish back.`,
-      `You eat the best food of your life.\nThe server watches every bite like a proposal, refilling your plate before you can swallow.\nYour sibling says you are turning gray.\nThe server says the meal was for you, then drags your sibling into the kitchen while the dessert bell keeps ringing.\nNow you want to take the wish back.`,
-      `The restaurant gives you everything for free.\nThe bill arrives anyway, written in names instead of numbers.\nYour best friend laughs once, then sees their name under dessert.\nThe hostess says substitutions are not available, opens the kitchen doors, and the chef pulls your best friend inside.\nNow you want to take the wish back.`
-    ],
-    luck: [
-      `You get your lucky year.\nEvery red light turns green, every bill disappears, every stranger moves out of your way before you ask.\nYour best friend says luck should not hurt people for inconveniencing you.\nThat night, the friend who took your parking spot is found apologizing to your empty driveway with both hands broken.\nNow you want to take the wish back.`,
-      `You have a good year.\nSo good that every bad thing meant for you lands on someone nearby instead.\nYour brother says his whole life is falling apart while yours keeps improving.\nWhen he tries to leave, your new lucky charm pulls the door shut and says family can absorb one more bad day.\nNow you want to take the wish back.`,
-      `Everything goes right for you.\nThe waiter spills boiling coffee on the person about to insult you. The elevator breaks after you get out. The car behind you crashes before it can honk.\nYour best friend says this is not luck, it is choosing targets.\nThat night, your best friend steps off the curb, and every streetlight goes green except the one that could save them.\nNow you want to take the wish back.`
-    ],
-    peace: [
-      `You get peace.\nThe calls stop first, then the crying upstairs, then the neighbor who always asks if you are okay.\nYour best friend comes over and says this is not peace.\nThe person keeping you calm opens the door, pulls your best friend inside, and the screaming stops before the kettle boils.\nNow you want to take the wish back.`,
-      `You get calm.\nYour partner starts filtering calls and removing anyone who raises your pulse.\nYour mother comes over crying.\nYour partner walks her to the elevator, holds the doors open, and lets go of her hand too late.\nNow you want to take the wish back.`,
-      `Your anxiety disappears.\nSo do your unread messages, your difficult relatives, and the neighbor who keeps asking if you are okay.\nYour best friend comes over and says calm should not have a body count.\nThe person helping you relax smiles, locks the bathroom door behind your best friend, and turns on the tub.\nNow you want to take the wish back.`
-    ],
-    revenge: [
-      `They regret hurting you.\nFirst come the apology texts, then the crying calls, then their brother outside your office asking what you did.\nYour best friend walks you to the parking lot and says revenge is getting out of hand.\nThe brother steps out from behind your best friend's car and swings the tire iron before either of you can run.\nNow you want to take the wish back.`,
-      `The target suffers exactly as requested.\nThen their mother arrives with questions and a voice so calm it should have a warning label.\nYour sibling tells you not to answer.\nShe waits beside your sibling's car, and when you look again, the passenger window is red.\nNow you want to take the wish back.`,
-      `They finally apologize.\nThey apologize at work, at dinner, and from outside your window at 3 a.m.\nYour roommate says this is not remorse; this is a schedule.\nThe person you punished smiles, says regret needs witnesses, and pulls your roommate into view.\nNow you want to take the wish back.`
-    ],
-    health: [
-      `You are healthy now.\nThe doctor calls it miraculous and starts removing anything risky, sweet, late, loud, or recognizably human.\nYour partner brings cake to celebrate.\nThe doctor takes it from their hand, injects them with something clear, and says stress spreads.\nNow you want to take the wish back.`,
-      `You recover completely.\nYour wellness coach decides stress is the last disease.\nYour best friend says you need to get out of the house.\nBy morning, the coach has changed the locks and written REST on the windows while your best friend bangs from outside.\nNow you want to take the wish back.`,
-      `Your body heals overnight.\nThe person taking care of you starts calling every emotion a symptom.\nYour sibling says you need fresh air.\nThe caretaker locks the window, writes “fresh air” on the list of triggers, and tapes your sibling's mouth shut.\nNow you want to take the wish back.`
-    ],
-    talent: [
-      `You become brilliant.\nYour mentor stops calling you gifted and starts calling you necessary.\nYour sibling says you have not slept in two days.\nThe mentor locks the lab door, says your sibling is interrupting the work, and bolts them out.\nNow you want to take the wish back.`,
-      `You get the talent you wanted.\nYour manager books every hour and calls rest “a leak in the asset.”\nYour best friend tries to take you home.\nThe studio door locks from the outside, and your manager says friends are bad for output while your best friend pounds on the glass.\nNow you want to take the wish back.`,
-      `You become a genius.\nPeople bring you problems, then food, then locks for the room where you solve them.\nYour partner says this is not a life.\nYour mentor says your partner is slowing the miracle down, then locks them outside with the others.\nNow you want to take the wish back.`
-    ],
-    family: [
-      `You get the family you wanted.\nThey arrive with groceries, framed photos, and memories of vacations you never took.\nYour best friend says none of these people are in your old pictures.\nYour new mother smiles, asks why your best friend is separating the family, and sends your new father to fix it.\nNow you want to take the wish back.`,
-      `The baby arrives before sunrise.\nNo hospital, no paperwork, just a crib in your room and a woman downstairs saying you promised her this life.\nYour sibling says you need to call someone.\nThe woman is already holding your sibling's phone and rocking the crib with one bloody foot.\nNow you want to take the wish back.`,
-      `Your family is whole now.\nEveryone sits at the table smiling at places set for people who used to be dead, gone, or better off away.\nYour partner whispers that this is not possible.\nYour father turns from the table and says partners are not family until they survive dinner.\nNow you want to take the wish back.`
-    ],
-    parents: [
-      `You get a perfect day with your parents.\nThey make breakfast, call you sweetheart, and remember a childhood you never had.\nYour best friend says the photos on the fridge changed overnight.\nYour mother smiles, asks why your best friend is taking you away again, and reaches for the carving knife.\nNow you want to take the wish back.`,
-      `You are with your parents again.\nThe living room is warm, the TV is on, and nobody mentions the years that were supposed to have happened.\nYour sibling comes over and says your parents do not know who they are anymore.\nYour father lowers the volume, calls your sibling an outsider, and pins them to the carpet while your mother keeps smiling at you.\nNow you want to take the wish back.`,
-      `Your parents finally understand you.\nThey understand your schedule, your passwords, and which friends make you doubt them.\nYour roommate says this is not love; it is surveillance with snacks.\nYour mother packs your roommate's bag, then your father drags it out while it is still moving.\nNow you want to take the wish back.`
-    ],
-    pet: [
-      `You get pets.\nBy morning, there are twelve of them in your apartment, all clean, all quiet, all staring at the same spot beside your bed.\nYour best friend says animals do not arrange themselves like a memorial.\nThe smallest one drags your best friend's keys under the couch, and the biggest one lunges when your best friend reaches for them.\nNow you want to take the wish back.`,
-      `The pet you wanted is waiting at your door with a red ribbon around its neck.\nIt knows your name, your route home, and which people make your shoulders tense.\nYour roommate says animals should not stand between you and the door.\nThat night, the pet scratches STAY into your roommate's door until the screaming stops.\nNow you want to take the wish back.`,
-      `You get the perfect pet.\nIt follows every command except leave, stop, and let them go.\nYour partner raises their voice once.\nThe pet bites your partner's ankle and drags them down the hall when they reach for the door.\nNow you want to take the wish back.`
-    ],
-    pet_dead: [
-      `Your dead pet does not come back alive.\nInstead, the living room becomes a memorial: flowers around the food bowl, candles in the carpet, medicine breath in the air.\nYour best friend says you should not touch what is moving under the blanket.\nThe blanket turns toward your best friend, and something underneath starts crawling fast.\nNow you want to take the wish back.`,
-      `Your dead pet comes home clean, warm, and wrong.\nFor one minute, you are crying too hard to notice the smell of medicine on its breath.\nYour best friend says you should not touch it.\nThe pet turns its head toward your best friend, opens its mouth, and screams in your voice.\nNow you want to take the wish back.`,
-      `You wish for your pet back.\nThe collar appears first, then the bowl, then the sound of claws crossing the kitchen where there is nothing to cast a shadow.\nYour roommate says dead things should stay buried.\nSomething under the table growls at the word buried, and your roommate's chair tips backward.\nNow you want to take the wish back.`
-    ],
-    travel: [
-      `You get your fresh start.\nThe new apartment has your clothes in the closet, your food in the fridge, and neighbors who already know your secrets.\nYour best friend flies out to bring you home and finds the address taped over every exit.\nSomeone in the kitchen takes your best friend's boarding pass, burns it over the stove, and says you are happier here.\nNow you want to take the wish back.`,
-      `You escape.\nThe city changes around you overnight: new street, new job, new name on the mailbox.\nYour sibling finds you and says your old room is empty and nobody remembers you lived there.\nThe woman at your new door says family makes moving harder, then locks the chain from outside and cuts your sibling's hand when they reach for it.\nNow you want to take the wish back.`,
-      `You get to leave everything behind.\nAt first, that sounds beautiful.\nThen your phone deletes every number except one you do not recognize.\nA stranger sends a photo of your best friend tied to your old bed and asks whether you want the last person who remembers you deleted too.\nNow you want to take the wish back.`
-    ],
-    drive: [
-      `You get the drive to the outskirts.\nThe city lights fall away, the radio dies, and the person in the passenger seat starts giving directions without looking up.\nYour best friend is in the back seat, begging you to turn around.\nThe passenger smiles at the dark road ahead, locks the windows, and says the outskirts need a witness.\nNow you want to take the wish back.`,
-      `You go for a long drive.\nFor the first hour, it is perfect: empty road, warm air, nobody asking anything from you.\nYour sibling is beside you until the next rest stop.\nThe person in the back seat steps out with your sibling's phone, says family problems belong in the trunk, and opens it for you to see.\nNow you want to take the wish back.`,
-      `You drive out of town.\nThe gas tank stays full, the road keeps repeating, and every exit sign points back to the same abandoned rest stop.\nYour friend begs you to turn around.\nThe car clicks all four locks, and the person in the back seat laughs like they have been there for miles.\nNow you want to take the wish back.`
-    ],
-    vacation: [
-      `You get the vacation.\nThe hotel upgrades you to a honeymoon suite, and your boyfriend is already inside with both room keys.\nYour best friend says the front desk has no record of your booking and tries to pull you into the hallway.\nYour boyfriend smiles, says friends ruin everything beautiful, and pushes your best friend over the balcony rail.\nNow you want to take the wish back.`,
-      `You wake up at the resort.\nThe ocean is perfect, the towels are warm, and your ex is lying beside you with both passports under their pillow.\nYour sibling says you need to leave before this gets worse.\nYour ex smiles, says vacations are better without witnesses, and shoves your sibling through the glass balcony door.\nNow you want to take the wish back.`,
-      `You get the beach holiday.\nThe water is blue enough to look fake, and the person beside you keeps saying you finally look happy.\nYour best friend walks down to the shoreline and says nobody can find your flight home.\nThe person beside you throws your phone into the ocean, then holds your best friend's head under the water until they stop asking.\nNow you want to take the wish back.`
-    ],
-    generic: [
-      `It happens exactly the way you asked.\nThe person beside you sees it happen first and decides the wish belongs to both of you.\nYour best friend says you need to leave before this gets worse.\nThe person beside you locks the door, breaks your best friend's phone, and says nobody is leaving your miracle.\nNow you want to take the wish back.`,
-      `You get exactly what you wanted.\nThe person you trusted most starts smiling like they were waiting for this part.\nYour sibling says this is not how miracles work.\nThat person puts the kitchen knife on the table and tells your sibling to leave before they ruin it.\nNow you want to take the wish back.`,
-      `The wish works.\nIt works so quickly that the room goes quiet.\nYour best friend says maybe this was a mistake.\nThe person smiling hardest asks why your best friend is still allowed to talk, then answers the question with the nearest bottle.\nNow you want to take the wish back.`
-    ]
-  };
+  const friend = pick(FRIENDS.filter(f => !who.includes(f.replace(/^your /, ''))));
+  let nameNow = who;
+  const fill = s => capitalize(s
+    .replace(/\{W\}/g, capitalize(nameNow)).replace(/\{w\}/g, nameNow)
+    .replace(/\{F\}/g, capitalize(friend)).replace(/\{f\}/g, friend)
+    .replace(/\{o\}/g, pr.o).replace(/\{p\}/g, pr.p));
 
-  const options = banks[category] || banks.generic;
-  return enforceRegretLock(toSecondPerson(pick(options), p), p);
-}
+  const sign = pick(romantic ? SIGNS.concat(ROMANTIC_SIGNS, ROMANTIC_SIGNS) : SIGNS);
+  const lines = [...opening.lines, sign];
+  const tier = tierFor(curse);
 
-function toSecondPerson(text, p) {
-  return text;
-}
-
-function buildNamedLoveTwist(wishText) {
-  const desired = extractDesiredPerson(wishText);
-  return [
-    `You get someone exactly like ${desired}.`,
-    `They know your jokes, your favorite songs, and the exact way ${desired} used to make you feel chosen.`,
-    `Your best friend says this is not romance; it is a copy wearing a smile.`,
-    `The copy smiles back, says originals make people ungrateful, and stabs your best friend for saying ${desired}'s name.`,
-    `Now you want to take the wish back.`
-  ].join('\n');
-}
-
-function extractDesiredPerson(wishText) {
-  const clean = String(wishText || '').replace(/[^\w\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
-  const patterns = [
-    /\b(?:boyfriend|girlfriend|partner)\s+like\s+([a-z][\w'-]*)/i,
-    /\bdate\s+([a-z][\w'-]*)/i,
-    /\b(?:boyfriend|girlfriend|partner)\s+([a-z][\w'-]*)/i,
-  ];
-  for (const pattern of patterns) {
-    const found = clean.match(pattern);
-    if (found && found[1]) return capitalize(found[1].toLowerCase());
+  if (tier === 1) {
+    lines.push(pick(TRAPPED));
+  } else if (tier === 2) {
+    lines.push(pick(WARNINGS), pick(KILLS), pick(AFTERMATH));
+  } else {
+    const undo = category.startsWith('money') ? [UNDO[0]] : UNDO.slice();
+    undo.push(romantic ? UNDO_ROMANTIC : UNDO_GENERIC);
+    lines.push(pick(KILLS), pick(undo), pick(ENDINGS));
   }
-  return 'the person you asked for';
+  lines.push(REGRET);
+  return lines.map((line, i) => { nameNow = i < opening.lines.length ? who : short; return fill(line); }).join('\n');
 }
 
-function enforceRegretLock(text, p) {
-  const lines = text.split('\n').filter(Boolean);
-  const last = lines[lines.length - 1] || '';
-  if (/take.*wish back|no refunds|no take-backs|cannot be undone|permanent/i.test(last)) {
-    return lines.join('\n');
-  }
-  const regret = 'Now you want to take the wish back.';
-  if (lines.length >= 6) lines[lines.length - 1] = regret;
-  else lines.push(regret);
-  return lines.join('\n');
+/* Kept async so a live model can be swapped in later without touching the snap animation. */
+async function fetchTwist(wishText, curse) {
+  return buildFortune(wishText, curse, gender);
 }
 
-function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function getFallbackTwist(wishText, curse) {
+  return buildFortune(wishText, curse, gender);
+}
 
+/* ── RESULT REVEAL ── line by line, with one possession flicker */
+let revealToken = 0;
+let lastTwist = '';
+const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function revealTwist(el, text) {
+  const token = ++revealToken;
+  lastTwist = text;
+  el.innerHTML = '';
+  const lines = text.split('\n');
+  const spans = lines.map(line => {
+    const s = document.createElement('span');
+    s.className = 'tl';
+    s.textContent = line;
+    el.appendChild(s);
+    return s;
+  });
+  if (reduceMotion) { spans.forEach(s => s.classList.add('on')); return; }
+  const showAll = () => spans.forEach(s => s.classList.add('on'));
+  el.onclick = () => { revealToken++; showAll(); };
+  spans.forEach((s, i) => setTimeout(() => {
+    if (token !== revealToken) return;
+    s.classList.add('on');
+  }, 250 + i * 780));
+  // One line near the middle briefly stops being the Willow's voice.
+  const target = spans[Math.min(spans.length - 2, 2 + Math.floor(Math.random() * Math.max(1, spans.length - 4)))];
+  const flickAt = 250 + spans.length * 780 + 900;
+  setTimeout(() => {
+    if (!target || !document.body.contains(target)) return;
+    const original = target.textContent;
+    target.classList.add('on', 'possessed');
+    target.textContent = 'IT’S NOT ME. PLEASE.';
+    setTimeout(() => { target.textContent = original; target.classList.remove('possessed'); }, 520);
+  }, flickAt);
+}
 
 
 /* ── SHOW RESULT ── */
@@ -1899,37 +1939,39 @@ async function showResult(twistPromise) {
   const rtEl = document.getElementById('rt');
   rtEl.innerHTML = '<span class="twist-loading">The Willow is deciding your fate</span>';
   try {
-    const twist = await twistPromise;
-    rtEl.innerHTML = ''; rtEl.textContent = twist;
-    rtEl.classList.add('twist-reveal');
+    revealTwist(rtEl, await twistPromise);
   } catch(e) {
-    rtEl.textContent = getFallbackTwist(wish, curseLevel);
-    rtEl.classList.add('twist-reveal');
+    revealTwist(rtEl, getFallbackTwist(wish, curseLevel));
   }
 }
 
-/* ── DOWNLOAD ── */
-async function dlCard() {
-  const btn = document.getElementById('bdl');
-  btn.innerHTML = '<span class="spin">&#9203;</span> Capturing\u2026'; btn.disabled = true;
-  try {
-    const c = await html2canvas(document.getElementById('rc'), {
-      backgroundColor:'#F2E4C4', scale:2.5, useCORS:true, logging:false
-    });
-    const a = document.createElement('a');
-    a.download = 'one-wish-willow-' + Date.now() + '.png';
-    a.href = c.toDataURL('image/png'); a.click();
-    btn.textContent = 'Downloaded. Warn your friends.';
-    setTimeout(() => { btn.innerHTML = 'Download Card &amp; Warn Your Friends'; btn.disabled = false; }, 3200);
-  } catch(e) { btn.textContent = 'Try again'; btn.disabled = false; }
-}
-
 function backToWish() {
+  revealToken++;
   show('sl');
 }
 
+/* Leaving is harder than it looks. */
+(function stayButton(){
+  const b = document.getElementById('bback');
+  let tried = 0;
+  b.addEventListener('mouseenter', () => {
+    if (tried++ % 3 !== 0) return;
+    b.textContent = 'STAY';
+    b.classList.add('stay');
+    setTimeout(() => { b.textContent = 'Back'; b.classList.remove('stay'); }, 650);
+  });
+})();
+
+/* Someone is waiting by the door while you are gone. */
+(function waitingTab(){
+  const real = document.title;
+  document.addEventListener('visibilitychange', () => {
+    document.title = document.hidden ? (wish ? 'I’ll be right here when you get home.' : 'Come back. I’m waiting by the door.') : real;
+  });
+})();
+
 function shareOnTwitter() {
-  const result = document.getElementById('rt')?.textContent?.trim() || '';
+  const result = lastTwist || document.getElementById('rt')?.textContent?.trim() || '';
   const wishLine = wish ? `I wished for: "${shorten(wish, 70)}"` : 'I made one wish.';
   const resultLine = shorten(result.split('\n').find(Boolean) || 'Now you want to take the wish back.', 135);
   const shareText = `${wishLine}\n${resultLine}\nNow I want to take the wish back.`;

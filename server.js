@@ -66,11 +66,16 @@ function localDay(date) {
 function readBody(req) {
   return new Promise(resolve => {
     let body = '';
+    let done = false;
     req.on('data', chunk => {
+      if (done) return;
       body += chunk;
-      if (body.length > 4096) req.destroy();
+      if (body.length > 4096) { done = true; resolve({}); req.destroy(); }
     });
+    req.on('error', () => { if (!done) { done = true; resolve({}); } });
     req.on('end', () => {
+      if (done) return;
+      done = true;
       try { resolve(JSON.parse(body || '{}')); }
       catch { resolve({}); }
     });
@@ -129,13 +134,24 @@ function publicAnalytics() {
   };
 }
 
+// Files that live in the repo but must never be served to visitors.
+const PRIVATE_FILES = new Set(['analytics-data.json', 'server.js', 'package.json', 'package-lock.json']);
+
 function serveStatic(req, res) {
-  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  let filePath = path.normalize(decodeURIComponent(url.pathname));
+  let filePath;
+  try {
+    const url = new URL(req.url, 'http://localhost');
+    filePath = path.normalize(decodeURIComponent(url.pathname));
+  } catch {
+    send(res, 400, 'Bad request', {'Content-Type': 'text/plain; charset=utf-8'});
+    return;
+  }
   if (filePath === '/' || filePath === '.') filePath = '/index.html';
   const abs = path.join(root, filePath);
+  const rel = path.relative(root, abs);
+  const hidden = rel.split(path.sep).some(part => part.startsWith('.'));
 
-  if (!abs.startsWith(root) || path.basename(abs) === 'analytics-data.json') {
+  if (rel.startsWith('..') || path.isAbsolute(rel) || hidden || PRIVATE_FILES.has(rel)) {
     send(res, 404, 'Not found', {'Content-Type': 'text/plain; charset=utf-8'});
     return;
   }
@@ -154,6 +170,16 @@ function serveStatic(req, res) {
 }
 
 const server = http.createServer(async (req, res) => {
+  try {
+    await route(req, res);
+  } catch (err) {
+    console.error(err);
+    if (!res.headersSent) send(res, 500, 'Server error', {'Content-Type': 'text/plain; charset=utf-8'});
+    else res.end();
+  }
+});
+
+async function route(req, res) {
   if (req.method === 'POST' && req.url === '/api/visit') {
     await handleVisit(req, res);
     return;
@@ -167,7 +193,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   send(res, 405, 'Method not allowed', {'Content-Type': 'text/plain; charset=utf-8'});
-});
+}
 
 server.listen(port, '0.0.0.0', () => {
   console.log(`One Wish Willow running on port ${port}`);
