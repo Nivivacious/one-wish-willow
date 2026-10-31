@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#E8190A">
 <title>One Wish Willow — Make Your Wish</title>
 
 <!-- Exact font matches for onewishwillow.com:
@@ -776,6 +777,66 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
   #sl .box-left img.ref-box-logo{transform:rotate(-5deg);}
   #sl .box-right{padding-top:24px!important;width:40%;gap:0;}
 }
+
+/* ═══ MOBILE + DESKTOP COMPATIBILITY ═══ */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{min-height:100dvh;-webkit-tap-highlight-color:transparent;}
+.page{
+  min-height:100dvh;
+  padding-left:max(14px,env(safe-area-inset-left));
+  padding-right:max(14px,env(safe-area-inset-right));
+  padding-bottom:max(28px,env(safe-area-inset-bottom));
+}
+#ss{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+button,input{touch-action:manipulation;}
+.btn,.gpick{user-select:none;-webkit-user-select:none;}
+img{max-width:100%;}
+/* Keyboard users can see where they are */
+.btn:focus-visible,.gpick:focus-visible,.cslider:focus-visible,.fq:focus-visible{outline:3px solid var(--dark);outline-offset:3px;}
+
+/* Wide screens: keep the form a comfortable reading width */
+@media (min-width:1100px){
+  #sl .ipan{padding-left:clamp(3rem,10vw,9rem);padding-right:clamp(3rem,10vw,9rem);}
+}
+
+/* Phones and tablets */
+@media (max-width:700px){
+  /* the "Amaze your friends" oval was spilling off the right edge */
+  #sl .box-right{right:8px!important;}
+  #sl .box-right>div:first-child{
+    max-width:min(118px,100%);
+    font-size:clamp(.62rem,2.6vw,.8rem)!important;
+    padding:7px 9px;
+    border-width:2px;
+  }
+  .gpick{min-height:44px;}
+  .wi{font-size:16px;}            /* below 16px iOS zooms the page on focus */
+  .btn{padding:.8rem 1.4rem;max-width:100%;}
+  #bspark{width:100%;}
+  .slider-ends{font-size:.66rem;}
+}
+@media (max-width:360px){
+  #sl .box-right>div:first-child{max-width:92px;font-size:.56rem!important;padding:5px 6px;}
+  .gpick{padding:.38rem .5rem;}
+}
+
+/* Touch screens: bigger slider thumb, no sticky hover effects */
+@media (pointer:coarse){
+  .gpick{min-height:44px;}
+  input[type=range].cslider{height:14px;margin:10px 0;}
+  input[type=range].cslider::-webkit-slider-thumb{width:32px;height:32px;}
+  input[type=range].cslider::-moz-range-thumb{width:32px;height:32px;}
+  input[type=range].cslider::-webkit-slider-thumb:hover{transform:none;}
+  .gpick:hover{background:var(--cream3);box-shadow:none;}
+  .gpick.active:hover{background:linear-gradient(#fb1d28,#d80908);box-shadow:3px 3px 0 var(--dark);}
+}
+
+/* Phones held sideways: fit the snap scene on a short screen */
+@media (max-height:500px) and (orientation:landscape){
+  .snap-stage{height:min(52vh,320px);width:min(80vw,620px);}
+  .wlabel{margin-bottom:6px;padding:4px 12px;}
+  .sstatus{margin-top:6px;}
+}
 </style>
 </head>
 
@@ -789,7 +850,7 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
   <div class="wlabel" id="wl"></div>
   <div class="snap-stage">
     <canvas id="sc" style="width:100%;height:100%;display:block;background:#F2E4C4;border-radius:8px;"></canvas>
-    <img id="snapArt" class="snap-art" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/Crack2.png?v=6285022533978037491774811195" alt="">
+    <img id="snapArt" class="snap-art" src="assets/crack.png" alt="">
     <div id="co" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;"></div>
   </div>
   <div class="sstatus" id="sts">Remove from the box and just make a wish.</div>
@@ -819,7 +880,7 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
       <div class="box-left">
         <!-- ONE WISH WILLOW logo arched, white on red -->
         <div style="position:relative;z-index:5;width:100%;">
-          <img class="ref-box-logo" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/headertext.png?v=166783226278564575191774811195" alt="One Wish Willow">
+          <img class="ref-box-logo" src="assets/header-text.png" alt="One Wish Willow">
           <svg viewBox="0 0 240 126" width="100%" style="display:none;overflow:visible;">
             <defs>
               <path id="bl1" d="M 8,86 Q 120,50 232,86"/>
@@ -855,7 +916,7 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
            CRACK + broken twig left → boy + girl faces centre → trailing stars/hearts/symbols right
            All red on cream, wave/arc composition -->
       <div style="position:relative;z-index:4;width:100%;padding:0 6px 4px;overflow:visible;">
-        <img class="official-crack-art" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/Crack2.png?v=6285022533978037491774811195" alt="">
+        <img class="official-crack-art" src="assets/crack.png" alt="">
         <svg viewBox="0 0 680 160" width="100%" xmlns="http://www.w3.org/2000/svg"
              style="display:block;overflow:visible;">
 
@@ -1068,7 +1129,7 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
       <div style="font-family:Georgia,'Times New Roman',serif;font-weight:900;font-size:1.1rem;color:var(--dark);letter-spacing:.02em;text-transform:uppercase;">What are you wishing for?</div>
     </div>
 
-    <input id="wi" type="text" class="wi" placeholder="I wish for&hellip;" maxlength="120" autocomplete="off"/>
+    <input id="wi" type="text" enterkeyhint="go" aria-label="Your wish" class="wi" placeholder="I wish for&hellip;" maxlength="120" autocomplete="off"/>
     <div style="font-size:.55rem;color:#8B6840;text-align:right;margin-top:.22rem;font-family:'Special Elite',cursive;" id="cc">0 / 120</div>
 
     <!-- GENDER PICKER -->
@@ -1089,7 +1150,7 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
         <div class="curse-pct" id="cpct">100%</div>
       </div>
       <div class="curse-mood" id="cmood" style="color:#8B1A10">No Refunds. No Exceptions.</div>
-      <input type="range" class="cslider" id="cslider" min="0" max="100" value="100"
+      <input type="range" class="cslider" id="cslider" aria-label="How badly should it go?" min="0" max="100" value="100"
              style="--fill:100%;" oninput="updateSlider(this)"/>
       <div class="slider-ends">
         <span>Barely wrong</span>
@@ -1108,16 +1169,16 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
   <!-- FAQ -->
   <div class="fwrap">
     <div class="divl"></div>
-    <div class="ftitle"><img class="faq-img" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/FAQ.png?v=78192355552971861771774811195" alt="FAQ"></div>
-    <div class="fi" onclick="tfaq(this)">
+    <div class="ftitle"><img class="faq-img" src="assets/faq.png" alt="FAQ"></div>
+    <div class="fi" onclick="tfaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tfaq(this);}" tabindex="0" role="button">
       <div class="fq">How many wishes do I get?<span class="fchev">&#9660;</span></div>
       <div class="fa">Single Use Only. Grants one wish. No multiple attempts. Using additional One Wish Willows&trade; will not change or affect your other wishes. Only one wish per life per person.</div>
     </div>
-    <div class="fi" onclick="tfaq(this)">
+    <div class="fi" onclick="tfaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tfaq(this);}" tabindex="0" role="button">
       <div class="fq">Can I change my wish after it&rsquo;s made?<span class="fchev">&#9660;</span></div>
       <div class="fa">Once made, a wish cannot be reversed or repeated. Consider long-term effects. Wishes are irreversible. Think carefully before wishing.</div>
     </div>
-    <div class="fi" onclick="tfaq(this)">
+    <div class="fi" onclick="tfaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tfaq(this);}" tabindex="0" role="button">
       <div class="fq">Are there wishes the Willow cannot grant?<span class="fchev">&#9660;</span></div>
       <div class="fa">Cannot grant wishes involving time manipulation, resurrection, immortality, or creating more One Wish Willows&trade;. TABI Cat Curiosities is not responsible for wish misinterpretations. Use at your own risk.</div>
     </div>
@@ -1139,7 +1200,7 @@ body::after{opacity:.035;mix-blend-mode:multiply;}
     <!-- Compact result header: logo white on red left, fate text on cream right -->
     <div class="box-content" style="min-height:80px;">
       <div class="box-left result-logo" style="width:38%;padding:10px 8px 10px 14px;">
-        <img class="ref-box-logo" src="https://www.onewishwillow.com/cdn/shop/t/2/assets/localize/headertext.png?v=166783226278564575191774811195" alt="One Wish Willow">
+        <img class="ref-box-logo" src="assets/header-text.png" alt="One Wish Willow">
       </div>
       <div class="box-centre" style="justify-content:flex-end;padding-right:12px;">
         <div style="text-align:right;position:relative;z-index:5;">
@@ -1315,9 +1376,20 @@ function boom(x,y,n=140){for(let i=0;i<n;i++)parts.push(new Sp(x,y));}
 (function pl(){px.clearRect(0,0,pc.width,pc.height);parts.forEach(p=>p.step());parts=parts.filter(p=>p.life>0);parts.forEach(p=>p.draw());requestAnimationFrame(pl);})();
 
 /* ── CRACK SOUND ── */
+let audioCtx = null;
+function unlockAudio() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!audioCtx) audioCtx = new AC();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch(e) {}
+}
 function playCrack() {
   try {
-    const ac=new(AudioContext||webkitAudioContext)();
+    unlockAudio();
+    const ac=audioCtx;
+    if(!ac) return;
     const now=ac.currentTime;
     const len=Math.floor(ac.sampleRate*.32),buf=ac.createBuffer(1,len,ac.sampleRate),d=buf.getChannelData(0);
     for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.7);
@@ -1401,6 +1473,8 @@ function go() {
   }
   if (snapping) return;
   snapping = true;
+  unlockAudio();
+  wi.blur();   // close the phone keyboard before the ritual
   wish = v;
   runSnap();
 }
@@ -1415,8 +1489,10 @@ function runSnap() {
   const canvas = document.getElementById('sc');
   const stage  = canvas.parentElement;
   const W = stage.clientWidth, H = stage.clientHeight;
-  canvas.width = W; canvas.height = H;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
   const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const co  = document.getElementById('co');
   const art = document.getElementById('snapArt');
   co.style.display = 'none'; co.innerHTML = '';
